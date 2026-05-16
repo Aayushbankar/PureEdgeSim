@@ -26,7 +26,9 @@ This launches a menu where you can quickly select the architecture and device co
 ```bash
 mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
 ```
-
+``` bash (windows)
+mvn --% exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" 
+```
 ### Option B: Direct Simulation (Uses Properties File)
 This runs the simulation strictly based on your settings in `simulation_parameters.properties`.
 ```bash
@@ -70,3 +72,38 @@ mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.simulationmanager.Simu
 After the simulation finishes, check the `PureEdgeSim/output/` folder.
 - **CSV Results**: `Sequential_simulation.csv` contains all the data you saw in the charts but in a format suitable for Excel or Python analysis.
 - **Text Logs**: Detailed step-by-step event logs are saved in the same timestamped folder.
+
+---
+
+## 6. Running on Windows (Command Prompt / PowerShell)
+
+If you are using Windows, you can run the simulation using either Command Prompt (CMD) or PowerShell.
+
+### 1. Check Prerequisites
+Open your terminal (CMD or PowerShell) and verify your installations:
+```powershell
+java -version
+mvn -version
+```
+
+### 2. Compiling the Project
+From the project root directory:
+```powershell
+mvn clean install -DskipTests
+```
+
+### 3. Running the Simulation
+#### **In PowerShell:**
+PowerShell handles arguments similarly to bash, but ensure your main class is correctly quoted if it contains special characters.
+```powershell
+mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+```
+
+#### **In Command Prompt (CMD):**
+```cmd
+mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+```
+
+> [!TIP]
+> If you encounter issues with `mvn` not being recognized, ensure that your Maven `bin` directory is added to your system's **Path** environment variable.
+

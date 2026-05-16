@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PureEdgeSim | Central Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        brand: { 50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 900: '#4c1d95' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a); color: #f8fafc; min-height: 100vh; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-hover:hover { background: rgba(30, 41, 59, 0.9); border-color: rgba(139, 92, 246, 0.5); transform: translateY(-2px); transition: all 0.3s ease; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        input, select { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; font-size: 0.875rem !important; }
+        .terminal { background: #000; border: 1px solid #ffffff20; font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #8b5cf650; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 glass border-r border-white/10 flex flex-col p-8">
+        <div class="mb-12 flex items-center gap-3">
+            <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg"><i data-lucide="shield" class="text-white"></i></div>
+            <h1 class="font-bold text-xl tracking-tight text-white">PureEdge<span class="text-brand-500">Sim</span></h1>
+        </div>
+        <nav class="flex-1 space-y-2">
+            <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-brand-600 text-white shadow-lg">
+                <i data-lucide="layout-dashboard"></i> <span class="font-medium">Dashboard</span>
+            </button>
+            <button onclick="showTab('settings')" id="btn-settings" class="nav-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white">
+                <i data-lucide="sliders"></i> <span class="font-medium">Parameters</span>
+            </button>
+            <button onclick="showTab('logs')" id="btn-logs" class="nav-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white">
+                <i data-lucide="terminal"></i> <span class="font-medium">Live Console</span>
+            </button>
+        </nav>
+        <div class="mt-auto p-4 rounded-2xl bg-brand-600/10 border border-brand-500/20 text-center">
+            <p class="text-xs text-brand-300">System v5.3.0</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-12">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-2" id="header-title">Simulation Control</h2>
+                <div class="flex items-center gap-4 text-slate-400 text-sm">
+                    <span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> <span id="status">IDLE</span></span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="activity" size="14"></i> Time: <span id="time">0</span>s</span>
+                    <span id="scenario" class="text-brand-400">Loading...</span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="restartSim()" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg active:scale-95">
+                    <i data-lucide="rotate-ccw" size="18"></i> Apply & Restart
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-content active space-y-8 animate-in fade-in duration-500">
+            <div class="grid grid-cols-4 gap-6">
+                <StatCard icon="monitor" label="CPU Utilization" id="cpu-val" value="0.0%" color="text-blue-400" />
+                <StatCard icon="shield-check" label="Task Success" id="success-val" value="0.0%" color="text-emerald-400" />
+                <StatCard icon="database" label="Total Tasks" id="tasks-val" value="0" color="text-amber-400" />
+                <StatCard icon="zap" label="Avg Bandwidth" id="net-val" value="0.0 Mbps" color="text-purple-400" />
+            </div>
+            <div class="glass rounded-3xl p-8">
+                <div id="chart-main"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-8">
+                <ChartBox title="Energy Consumption" id="chart-energy" />
+                <ChartBox title="Network Usage" id="chart-network" />
+                <ChartBox title="Failure Reasons" id="chart-failures" />
+            </div>
+        </div>
+
+        <!-- Parameters Tab -->
+        <div id="tab-settings" class="tab-content space-y-8 animate-in zoom-in duration-300">
+            <div class="grid grid-cols-2 gap-8">
+                <div class="glass rounded-3xl p-8 space-y-6">
+                    <h3 class="text-xl font-bold border-b border-white/10 pb-4 flex items-center gap-2"><i data-lucide="info"></i> General Configuration</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <ParamInput label="Simulation Duration" id="simulationDuration" type="number" />
+                        <ParamInput label="Max Edge Devices" id="maxNumberOfEdgeDevices" type="number" />
+                        <ParamInput label="Devices Range" id="edgeDevicesRange" type="number" />
+                        <ParamInput label="Parallelism" id="parallelism_enabled" type="select" options="true,false" />
+                    </div>
+                </div>
+                <div class="glass rounded-3xl p-8 space-y-6">
+                    <h3 class="text-xl font-bold border-b border-white/10 pb-4 flex items-center gap-2"><i data-lucide="network"></i> Network Settings</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <ParamInput label="WAN Bandwidth" id="wanBandwidth" type="number" />
+                        <ParamInput label="LAN Bandwidth" id="lanBandwidth" type="number" />
+                        <ParamInput label="WAN Latency" id="wanLatency" type="number" />
+                        <ParamInput label="LAN Latency" id="lanLatency" type="number" />
+                    </div>
+                </div>
+            </div>
+            <div class="glass rounded-3xl p-8 space-y-6">
+                <h3 class="text-xl font-bold border-b border-white/10 pb-4">Output & Logging</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <ParamInput label="Output Folder" id="outputFolder" type="text" value="PureEdgeSim/output/" />
+                    <ParamInput label="Settings Folder" id="settingsFolder" type="text" value="PureEdgeSim/settings/" />
+                    <ParamInput label="Deep Logging" id="deepLoggingEnabled" type="select" options="true,false" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="tab-logs" class="tab-content h-[calc(100vh-250px)] animate-in slide-in-from-right duration-300">
+            <div class="terminal h-full rounded-2xl p-6 overflow-y-auto text-sm text-green-400 shadow-2xl border-white/5" id="log-terminal">
+                <div class="text-slate-500 mb-4 font-mono">--- PUREEDGESIM CORE LOG SYSTEM INITIALIZED ---</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('bg-brand-600', 'text-white', 'shadow-lg'));
+            document.getElementById('btn-' + tabId).classList.add('bg-brand-600', 'text-white', 'shadow-lg');
+            document.getElementById('header-title').innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+        }
+
+        function StatCard({ icon, label, id, value, color }) {
+            return `<div class="glass p-6 rounded-2xl">
+                <div class="p-3 rounded-xl bg-white/5 w-fit mb-4 ${color}"><i data-lucide="${icon}"></i></div>
+                <p class="text-xs text-slate-400 font-medium mb-1 uppercase">${label}</p>
+                <p class="text-2xl font-bold text-white" id="${id}">${value}</p>
+            </div>`;
+        }
+
+        function ChartBox({ title, id }) {
+            return `<div class="glass rounded-3xl p-8"><h3 class="text-sm font-bold mb-6 text-white text-center uppercase tracking-widest">${title}</h3><div id="${id}"></div></div>`;
+        }
+
+        function ParamInput({ label, id, type, options, value }) {
+            let input = '';
+            if (type === 'select') {
+                input = `<select id="${id}" class="p-2 rounded-lg w-full">${options.split(',').map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
+            } else {
+                input = `<input type="${type}" id="${id}" class="p-2 rounded-lg w-full" value="${value || 0}">`;
+            }
+            return `<div class="flex flex-col gap-1.5"><label class="text-[11px] text-slate-500 font-bold uppercase">${label}</label>${input}</div>`;
+        }
+
+        // Initialize UI Components
+        document.querySelectorAll('StatCard').forEach(el => el.outerHTML = StatCard(Object.fromEntries(el.attributes.entries().map(a => [a.name, a.value]))));
+        document.querySelectorAll('ChartBox').forEach(el => el.outerHTML = ChartBox(Object.fromEntries(el.attributes.entries().map(a => [a.name, a.value]))));
+        document.querySelectorAll('ParamInput').forEach(el => el.outerHTML = ParamInput(Object.fromEntries(el.attributes.entries().map(a => [a.name, a.value]))));
+
+        // Charts
+        const opts = { chart: { toolbar: { show: false }, background: 'transparent' }, theme: { mode: 'dark' }, stroke: { show: false } };
+        const main = new ApexCharts(document.querySelector("#chart-main"), { ...opts, chart: { ...opts.chart, type: 'area', height: 350 }, stroke: { curve: 'smooth', width: 2, show: true }, colors: ['#8b5cf6', '#10b981'], series: [{ name: 'CPU', data: [] }, { name: 'Success', data: [] }] });
+        const energy = new ApexCharts(document.querySelector("#chart-energy"), { ...opts, chart: { ...opts.chart, type: 'donut', height: 250 }, labels: ['Cloud', 'Edge', 'Mist'], colors: ['#3b82f6', '#8b5cf6', '#10b981'], series: [0,0,0] });
+        const network = new ApexCharts(document.querySelector("#chart-network"), { ...opts, chart: { ...opts.chart, type: 'donut', height: 250 }, labels: ['WAN', 'MAN', 'LAN'], colors: ['#ef4444', '#f59e0b', '#3b82f6'], series: [0,0,0] });
+        const fails = new ApexCharts(document.querySelector("#chart-failures"), { ...opts, chart: { ...opts.chart, type: 'donut', height: 250 }, labels: ['Lat', 'Mob', 'Res', 'Dead'], colors: ['#ef4444', '#f59e0b', '#8b5cf6', '#334155'], series: [0,0,0,0] });
+        [main, energy, network, fails].forEach(c => c.render());
+
+        async function restartSim() {
+            const params = {};
+            document.querySelectorAll('input, select').forEach(el => {
+                if (el.id.startsWith('cfg-') || el.id) params[el.id] = el.value;
+            });
+            await fetch('/api/config', { method: 'POST', body: JSON.stringify(params) });
+            await fetch('/api/restart', { method: 'POST' });
+            showTab('logs');
+        }
+
+        let lastLogCount = 0;
+        async function poll() {
+            try {
+                const res = await fetch('/api/stats');
+                const d = await res.json();
+                document.getElementById('status').innerText = d.status;
+                document.getElementById('time').innerText = Math.floor(d.time);
+                document.getElementById('scenario').innerText = d.currentScenario;
+                document.getElementById('cpu-val').innerText = d.cpuUtilization.toFixed(1) + '%';
+                document.getElementById('success-val').innerText = d.taskSuccessRate.toFixed(1) + '%';
+                document.getElementById('tasks-val').innerText = d.totalTasks;
+                document.getElementById('net-val').innerText = d.networkUtilization.toFixed(2) + ' Mbps';
+
+                main.updateSeries([{ name: 'CPU', data: d.history.map(h => h.cpu) }, { name: 'Success', data: d.history.map(h => h.successRate) }]);
+                energy.updateSeries([d.energy.cloud, d.energy.edge, d.energy.mist]);
+                network.updateSeries([d.networkUsage.wan, d.networkUsage.man, d.networkUsage.lan]);
+                fails.updateSeries([d.failures.latency, d.failures.mobility, d.failures.resources, d.failures.deviceDead]);
+
+                if (d.logs.length > lastLogCount) {
+                    const terminal = document.getElementById('log-terminal');
+                    for (let i = lastLogCount; i < d.logs.length; i++) {
+                        const line = document.createElement('div');
+                        line.className = 'py-0.5 border-b border-white/5 opacity-80 hover:opacity-100 transition-opacity';
+                        line.innerText = `> ${d.logs[i]}`;
+                        terminal.appendChild(line);
+                    }
+                    terminal.scrollTop = terminal.scrollHeight;
+                    lastLogCount = d.logs.length;
+                }
+            } catch (e) {}
+        }
+        setInterval(poll, 1000);
+    </script>
+</body>
+</html>

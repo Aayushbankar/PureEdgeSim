@@ -659,4 +659,15 @@ public class SimLog {
 
 	}
 
+    public int getTasksFailedLatency() { return tasksFailedLatency; }
+    public int getTasksFailedMobility() { return tasksFailedMobility; }
+    public int getTasksFailedRessourcesUnavailable() { return tasksFailedRessourcesUnavailable; }
+    public int getTasksFailedBeacauseDeviceDead() { return tasksFailedBeacauseDeviceDead; }
+    public Double getTotalLanUsage() { return totalLanUsage; }
+    public Double getTotalManUsage() { return totalManUsage; }
+    public Double getTotalWanUsage() { return totalWanUsage; }
+    public int getTasksExecutedOnCloud() { return tasksExecutedOnCloud; }
+    public int getTasksExecutedOnEdge() { return tasksExecutedOnEdge; }
+    public int getTasksExecutedOnMist() { return tasksExecutedOnMist; }
+    public List<String> getLog() { return log; }
 }

@@ -283,16 +283,23 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<includeProjectDependencies>true</includeProjectDependencies>
+					<includePluginDependencies>true</includePluginDependencies>
+					<executableDependency>
+						<groupId>net.sourceforge.jFuzzyLogic</groupId>
+						<artifactId>jFuzzyLogic</artifactId>
+					</executableDependency>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<excludes>
-						<exclude>**/examples/Example8.java</exclude>
-						<exclude>**/examples/Example8FuzzyLogicOrchestrator.java</exclude>
-						<exclude>**/examples/Example1.java</exclude>
-						<exclude>**/examples/Example5.java</exclude>
-					</excludes>
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>

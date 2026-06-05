@@ -28,6 +28,11 @@
 			<organization>LIPAH laboratory, Faculty of Science of Tunis</organization>
 			<organizationUrl>http://www.fst.rnu.tn</organizationUrl>
 		</developer>
+		<developer>
+			<id>aayushbankar</id>
+			<name>aayushbankar</name>
+			<email>aayushbankar42@gmail.com</email>
+		</developer>
 	</developers>
 
 	<scm>

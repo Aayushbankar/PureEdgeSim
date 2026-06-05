@@ -28,15 +28,14 @@ mvn clean compile
 #### Mode A: Interactive Menu-based Mode (Console UI)
 Launch without arguments to use the interactive menu:
 ```bash
-mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+mvn exec:java "-Dexec.mainClass=com.mechalikh.pureedgesim.MainApplication"
 ```
 You can dynamically modify settings categories (General, Network, Orchestration, File Paths) with interactive guidance and validation before launching.
 
 #### Mode B: Parameter-based Mode (Headless / Scripted)
 You can directly pass command-line arguments to override configurations. This is ideal for server and background runs:
 ```bash
-mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" \
-    -Dexec.args="--time 0.05 --devices 200 --parallel false"
+mvn exec:java "-Dexec.mainClass=com.mechalikh.pureedgesim.MainApplication" "-Dexec.args=--time 0.05 --devices 200 --parallel false"
 ```
 
 For detailed instructions, argument references, and configuration guides, check out:

@@ -147,9 +147,16 @@ public class SimLog {
 					/ totalNodes;
 		}
 
-		averageCloudCpuUtilization /= SimulationParameters.numberOfCloudDataCenters;
-		averageEdgeCpuUtilization /= SimulationParameters.numberOfEdgeDataCenters;
-		averageMistCpuUtilization /= simulationManager.getDataCentersManager().getComputingNodesGenerator().getMistOnlyListSensorsExcluded().size();
+		if (SimulationParameters.numberOfCloudDataCenters > 0) {
+			averageCloudCpuUtilization /= SimulationParameters.numberOfCloudDataCenters;
+		}
+		if (SimulationParameters.numberOfEdgeDataCenters > 0) {
+			averageEdgeCpuUtilization /= SimulationParameters.numberOfEdgeDataCenters;
+		}
+		int mistCount = simulationManager.getDataCentersManager().getComputingNodesGenerator().getMistOnlyListSensorsExcluded().size();
+		if (mistCount > 0) {
+			averageMistCpuUtilization /= mistCount;
+		}
 
 		print("Average CPU utilization                                                 :"
 				+ padLeftSpaces(decimalFormat.format(averageCpuUtilization), 20) + " %%");
@@ -194,39 +201,54 @@ public class SimLog {
 		print(getClass().getSimpleName() + " - Printing iteration output...");
 		print("------------------------------------------------------- OUTPUT -------------------------------------------------------");
 		print("");
+		double notGenPercentage = generatedTasksCount > 0 ? (double) notGeneratedBecDeviceDead * 100 / generatedTasksCount : 0.0;
 		print("Tasks not sent because device died (low energy)                         :"
-				+ padLeftSpaces(decimalFormat.format(notGeneratedBecDeviceDead / generatedTasksCount), 20) + " %% ("
+				+ padLeftSpaces(decimalFormat.format(notGenPercentage), 20) + " %% ("
 				+ notGeneratedBecDeviceDead + " tasks)");
+		
+		double sentPercentage = generatedTasksCount > 0 ? (double) tasksSent * 100 / generatedTasksCount : 0.0;
 		print("Tasks sent from edge devices                                            :"
-				+ padLeftSpaces("" + decimalFormat.format(((double) tasksSent * 100) / ((double) generatedTasksCount)),
-						20)
+				+ padLeftSpaces("" + decimalFormat.format(sentPercentage), 20)
 				+ " %% (" + tasksSent + " among " + generatedTasksCount + " generated tasks)");
 
 		print("-------------------------------------All values below are based on the sent tasks-------------------------------------");
 		print("Total tasks execution time                                              :"
 				+ padLeftSpaces(decimalFormat.format(totalExecutionTime), 20) + " seconds");
+		
+		double avgExecTime = executedTasksCount > 0 ? totalExecutionTime / executedTasksCount : 0.0;
 		print("Average task execution time                                             :"
-				+ padLeftSpaces(decimalFormat.format(totalExecutionTime / executedTasksCount), 20) + " seconds");
+				+ padLeftSpaces(decimalFormat.format(avgExecTime), 20) + " seconds");
 		print("Total waiting time (from submitting the tasks to when execution started):"
 				+ padLeftSpaces(decimalFormat.format(totalWaitingTime), 20) + " seconds");
+				
+		double avgWaitingTime = executedTasksCount > 0 ? totalWaitingTime / executedTasksCount : 0.0;
 		print("Average task waiting time                                               :"
-				+ padLeftSpaces(decimalFormat.format(totalWaitingTime / executedTasksCount), 20) + " seconds");
+				+ padLeftSpaces(decimalFormat.format(avgWaitingTime), 20) + " seconds");
+				
+		double successPercentage = tasksSent > 0 ? (double) (tasksSent - tasksFailed) * 100 / tasksSent : 0.0;
 		print("Tasks successfully executed                                             :"
-				+ padLeftSpaces("" + decimalFormat.format((double) (tasksSent - tasksFailed) * 100 / tasksSent), 20)
+				+ padLeftSpaces("" + decimalFormat.format(successPercentage), 20)
 				+ " %% (" + (tasksSent - tasksFailed) + " among " + tasksSent + " sent tasks)");
 
 		print("Tasks failures");
+		double failResourcesPercentage = tasksSent > 0 ? (double) tasksFailedRessourcesUnavailable * 100 / tasksSent : 0.0;
 		print("                              Not executed due to resource unavailablity:"
-				+ padLeftSpaces(decimalFormat.format((double) tasksFailedRessourcesUnavailable * 100 / tasksSent), 20)
+				+ padLeftSpaces(decimalFormat.format(failResourcesPercentage), 20)
 				+ " %% (" + tasksFailedRessourcesUnavailable + " tasks)");
+				
+		double failLatencyPercentage = tasksSent > 0 ? (double) tasksFailedLatency * 100 / tasksSent : 0.0;
 		print("                                   Executed but failed due to high delay:"
-				+ padLeftSpaces(decimalFormat.format((double) tasksFailedLatency * 100 / tasksSent), 20) + " %% ("
+				+ padLeftSpaces(decimalFormat.format(failLatencyPercentage), 20) + " %% ("
 				+ tasksFailedLatency + " tasks from " + tasksSent + " successfully sent tasks)");
+				
+		double failDeadPercentage = tasksSent > 0 ? (double) tasksFailedBeacauseDeviceDead * 100 / tasksSent : 0.0;
 		print("               Tasks execution results not returned due to devices death:"
-				+ padLeftSpaces(decimalFormat.format((double) tasksFailedBeacauseDeviceDead * 100 / tasksSent), 20)
+				+ padLeftSpaces(decimalFormat.format(failDeadPercentage), 20)
 				+ " %% (" + tasksFailedBeacauseDeviceDead + " tasks)");
+				
+		double failMobilityPercentage = tasksSent > 0 ? (double) tasksFailedMobility * 100 / tasksSent : 0.0;
 		print("            Tasks execution results not returned due to devices mobility:"
-				+ padLeftSpaces(decimalFormat.format((double) tasksFailedMobility * 100 / tasksSent), 20) + " %% ("
+				+ padLeftSpaces(decimalFormat.format(failMobilityPercentage), 20) + " %% ("
 				+ tasksFailedMobility + " tasks)");
 
 		print("Tasks executed on each level                                            :" + "Cloud= "
@@ -241,9 +263,9 @@ public class SimLog {
 
 		resultsList.add(currentOrchArchitecture + "," + currentOrchAlgorithm + "," + currentEdgeDevicesCount + ","
 				+ decimalFormat.format(totalExecutionTime) + ","
-				+ decimalFormat.format(totalExecutionTime / executedTasksCount) + ","
+				+ decimalFormat.format(avgExecTime) + ","
 				+ decimalFormat.format(totalWaitingTime) + ","
-				+ decimalFormat.format(totalWaitingTime / executedTasksCount) + "," + generatedTasksCount + ","
+				+ decimalFormat.format(avgWaitingTime) + "," + generatedTasksCount + ","
 				+ (tasksSent - tasksFailed) + "," + tasksFailedRessourcesUnavailable + "," + tasksFailedLatency + ","
 				+ tasksFailedBeacauseDeviceDead + "," + tasksFailedMobility + "," + notGeneratedBecDeviceDead + ","
 				+ tasksExecutedOnCloud + "," + (tasksExecutedOnCloud - tasksFailedCloud) + "," + tasksExecutedOnEdge
@@ -252,33 +274,45 @@ public class SimLog {
 	}
 
 	public void printNetworkRelatedResults() {
+		double totalNetUsage = totalLanUsage + totalManUsage + totalWanUsage;
 		print("Network usage                                                           :"
-				+ padLeftSpaces(decimalFormat.format(totalLanUsage + totalManUsage + totalWanUsage), 20)
+				+ padLeftSpaces(decimalFormat.format(totalNetUsage), 20)
 				+ " seconds (The total traffic: " + decimalFormat.format(totalTraffic) + " (MBytes) )");
+		
+		double wanPercentage = totalNetUsage > 0 ? totalWanUsage * 100 / totalNetUsage : 0.0;
+		double wanContainerPercentage = totalWanUsage > 0 ? containersWanUsage * 100 / totalWanUsage : 0.0;
 		print("                                                                         " + "  Wan="
 				+ padLeftSpaces(decimalFormat.format(totalWanUsage), 14) + " seconds ("
-				+ decimalFormat.format(totalWanUsage * 100 / (totalLanUsage + totalManUsage + totalWanUsage))
+				+ decimalFormat.format(wanPercentage)
 				+ " %% of total usage, WAN used when downloading containers="
-				+ decimalFormat.format(totalWanUsage == 0 ? 0 : containersWanUsage * 100 / totalWanUsage)
+				+ decimalFormat.format(wanContainerPercentage)
 				+ " %% of WAN usage )");
+				
+		double manPercentage = totalNetUsage > 0 ? totalManUsage * 100 / totalNetUsage : 0.0;
+		double manContainerPercentage = totalManUsage > 0 ? containersManUsage * 100 / totalManUsage : 0.0;
 		print("                                                                         " + "  Man="
 				+ padLeftSpaces(decimalFormat.format(totalManUsage), 14) + " seconds ("
-				+ decimalFormat.format(totalManUsage * 100 / (totalLanUsage + totalManUsage + totalWanUsage))
+				+ decimalFormat.format(manPercentage)
 				+ " %% of total usage, MAN used when downloading containers="
-				+ decimalFormat.format(totalManUsage == 0 ? 0 : containersManUsage * 100 / totalManUsage)
+				+ decimalFormat.format(manContainerPercentage)
 				+ " %% of MAN usage )");
+				
+		double lanPercentage = totalNetUsage > 0 ? totalLanUsage * 100 / totalNetUsage : 0.0;
+		double lanContainerPercentage = totalLanUsage > 0 ? containersLanUsage * 100 / totalLanUsage : 0.0;
 		print("                                                                         " + "  Lan="
 				+ padLeftSpaces(decimalFormat.format(totalLanUsage), 14) + " seconds ("
-				+ decimalFormat.format(totalLanUsage * 100 / (totalLanUsage + totalManUsage + totalWanUsage))
+				+ decimalFormat.format(lanPercentage)
 				+ " %% of total usage, LAN used when downloading containers="
-				+ decimalFormat.format(containersLanUsage * 100 / totalLanUsage) + " %% of LAN usage )");
+				+ decimalFormat.format(lanContainerPercentage) + " %% of LAN usage )");
+				
+		double avgSpeed = transfersCount > 0 ? totalBandwidth / transfersCount : 0.0;
 		print("Average transfer speed                                                  :"
-				+ padLeftSpaces(decimalFormat.format(totalBandwidth / transfersCount), 20) + " Mbps  ");
+				+ padLeftSpaces(decimalFormat.format(avgSpeed), 20) + " Mbps  ");
 		// Add these values to the las item of the results list
 		resultsList.set(resultsList.size() - 1,
 				resultsList.get(resultsList.size() - 1) + totalLanUsage + "," + totalWanUsage + "," + totalLanUsage
 						+ "," + totalTraffic + "," + containersWanUsage + "," + containersLanUsage + ","
-						+ (totalBandwidth / transfersCount) + ",");
+						+ avgSpeed + ",");
 	}
 
 	public void printPowerConsumptionResults(List<Task> finishedTasks) {
@@ -351,36 +385,39 @@ public class SimLog {
 
 		}
 		batteryPoweredDevicesCount = aliveBatteryPoweredDevicesCount + deadEdgeDevicesCount;
-		// escape from devision by 0
-		if (aliveBatteryPoweredDevicesCount == 0)
-			aliveBatteryPoweredDevicesCount = 1;
+		
+		int aliveDivisor = aliveBatteryPoweredDevicesCount > 0 ? aliveBatteryPoweredDevicesCount : 1;
 		energyConsumption = cloudEnConsumption + edgeEnConsumption + mistEnConsumption;
-		averageRemainingPower = averageRemainingPower / (double) aliveBatteryPoweredDevicesCount;
-		averageRemainingPowerWh = averageRemainingPowerWh / (double) aliveBatteryPoweredDevicesCount;
-		double averageCloudEnConsumption = cloudEnConsumption / SimulationParameters.numberOfCloudDataCenters;
-		double averageEdgeEnConsumption = edgeEnConsumption / SimulationParameters.numberOfEdgeDataCenters;
-		double averageMistEnConsumption = mistEnConsumption / simulationManager.getScenario().getDevicesCount();
+		averageRemainingPower = averageRemainingPower / (double) aliveDivisor;
+		averageRemainingPowerWh = averageRemainingPowerWh / (double) aliveDivisor;
+		double averageCloudEnConsumption = SimulationParameters.numberOfCloudDataCenters > 0 ? cloudEnConsumption / SimulationParameters.numberOfCloudDataCenters : 0.0;
+		double averageEdgeEnConsumption = SimulationParameters.numberOfEdgeDataCenters > 0 ? edgeEnConsumption / SimulationParameters.numberOfEdgeDataCenters : 0.0;
+		double averageMistEnConsumption = simulationManager.getScenario().getDevicesCount() > 0 ? mistEnConsumption / simulationManager.getScenario().getDevicesCount() : 0.0;
 
+		int totalNodesCount = SimulationParameters.numberOfEdgeDataCenters + SimulationParameters.numberOfCloudDataCenters
+								+ simulationManager.getScenario().getDevicesCount();
+		double averageNodeEn = totalNodesCount > 0 ? energyConsumption / totalNodesCount : 0.0;
 		print("Energy consumption                                                      :"
 				+ padLeftSpaces(decimalFormat.format(energyConsumption), 20) + " Wh (Average: "
-				+ decimalFormat.format(energyConsumption
-						/ (SimulationParameters.numberOfEdgeDataCenters + SimulationParameters.numberOfCloudDataCenters
-								+ simulationManager.getScenario().getDevicesCount()))
+				+ decimalFormat.format(averageNodeEn)
 				+ " Wh/data center(or device))");
+		
+		double avgTaskEn = finishedTasks.size() > 0 ? energyConsumption / (double) finishedTasks.size() : 0.0;
 		print("                                                                        :" + padLeftSpaces("", 19)
-				+ "     (Average: " + decimalFormat.format(energyConsumption / (double) finishedTasks.size())
+				+ "     (Average: " + decimalFormat.format(avgTaskEn)
 				+ " Wh/task)");
+				
 		print("Energy Consumption per level                                            :Cloud= "
 				+ padLeftSpaces(decimalFormat.format(cloudEnConsumption), 13) + " Wh (Average: "
-				+ decimalFormat.format(cloudEnConsumption / SimulationParameters.numberOfCloudDataCenters)
+				+ decimalFormat.format(averageCloudEnConsumption)
 				+ " Wh/data center)");
 		print("                                                                          Edge="
 				+ padLeftSpaces(decimalFormat.format(edgeEnConsumption), 14) + " Wh (Average: "
-				+ decimalFormat.format(edgeEnConsumption / SimulationParameters.numberOfEdgeDataCenters)
+				+ decimalFormat.format(averageEdgeEnConsumption)
 				+ " Wh/data center)");
 		print("                                                                          Mist="
 				+ padLeftSpaces(decimalFormat.format(mistEnConsumption), 14) + " Wh (Average: "
-				+ decimalFormat.format(mistEnConsumption / currentEdgeDevicesCount) + " Wh/edge device)");
+				+ decimalFormat.format(averageMistEnConsumption) + " Wh/edge device)");
 
 		print("Energy Consumption per network                                          :  WAN="
 				+ padLeftSpaces(decimalFormat.format(wan), 14) + " Wh");
@@ -396,10 +433,11 @@ public class SimLog {
 		print("                                                                      Ethernet="
 				+ padLeftSpaces(decimalFormat.format(eth), 14) + " Wh ");
 
+		double deadPercentage = batteryPoweredDevicesCount > 0 ? ((double) deadEdgeDevicesCount) * 100 / (double) batteryPoweredDevicesCount : 0.0;
 		print("Dead edge devices due to battery drain                                  :"
 				+ padLeftSpaces(decimalFormat.format(deadEdgeDevicesCount), 20) + " devices (Among "
 				+ batteryPoweredDevicesCount + " devices with batteries ("
-				+ decimalFormat.format(((double) deadEdgeDevicesCount) * 100 / (double) batteryPoweredDevicesCount)
+				+ decimalFormat.format(deadPercentage)
 				+ " %%))");
 		print("Average remaining power (devices with batteries that are still alive)   :"
 				+ padLeftSpaces(decimalFormat.format(averageRemainingPowerWh), 20) + " Wh (Average: "
@@ -411,9 +449,7 @@ public class SimLog {
 		// Add these values to the las item of the results list
 		resultsList.set(resultsList.size() - 1, resultsList.get(resultsList.size() - 1)
 				+ decimalFormat.format(energyConsumption) + ","
-				+ decimalFormat.format(energyConsumption
-						/ (SimulationParameters.numberOfEdgeDataCenters + SimulationParameters.numberOfCloudDataCenters
-								+ simulationManager.getScenario().getDevicesCount()))
+				+ decimalFormat.format(averageNodeEn)
 				+ "," + decimalFormat.format(cloudEnConsumption) + "," + decimalFormat.format(averageCloudEnConsumption)
 				+ "," + decimalFormat.format(edgeEnConsumption) + "," + decimalFormat.format(averageEdgeEnConsumption)
 				+ "," + decimalFormat.format(mistEnConsumption) + "," + decimalFormat.format(averageMistEnConsumption)

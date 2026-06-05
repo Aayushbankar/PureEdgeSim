@@ -22,3 +22,12 @@ nbproject/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Scratch workspace tools and maven
+scratch/
+
+# Jacoco test reports
+jacoco.xml
+**/jacoco.exec
+**/target/
+**/output/

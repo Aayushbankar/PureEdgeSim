@@ -203,7 +203,7 @@ public class DefaultSimulationManager extends SimulationManager implements OnSim
 
 		case SHOW_PROGRESS:
 			// Calculate the simulation progress.
-			int progress = 100 * tasksCount / simLog.getGeneratedTasks();
+			int progress = simLog.getGeneratedTasks() > 0 ? (100 * tasksCount / simLog.getGeneratedTasks()) : 100;
 			if (oldProgress != progress) {
 				oldProgress = progress;
 				if (progress % 10 == 0 || (progress % 10 < 5) && lastWrittenNumber + 10 < progress) {
@@ -227,7 +227,7 @@ public class DefaultSimulationManager extends SimulationManager implements OnSim
 		case PRINT_LOG:
 
 			// Whether to wait or not, if some tasks have not been executed yet.
-			if (SimulationParameters.waitForAllTasksToFinish && (tasksCount / simLog.getGeneratedTasks()) < 1) {
+			if (SimulationParameters.waitForAllTasksToFinish && simLog.getGeneratedTasks() > 0 && (tasksCount / simLog.getGeneratedTasks()) < 1) {
 				// 1 = 100% , 0,9= 90%
 				// Some tasks may take hours to be executed that's why we don't wait until
 				// all of them get executed, but we only wait for 99% of tasks to be executed at

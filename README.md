@@ -13,47 +13,35 @@ PureEdgeSim enables large-scale study of IoT as a distributed, dynamic, and high
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Running the Simulation
 
-Follow these steps to get PureEdgeSim up and running on your machine:
+Follow these steps to get the new CLI-based PureEdgeSim running:
 
-### **Step 1: Clone the Repository**
-Open your terminal and run:
+### **Step 1: Compile the Project**
+Navigate to the project root directory and run:
 ```bash
-git clone https://github.com/Aayushbankar/PureEdgeSim
+mvn clean compile
 ```
 
-### **Step 2: Install Prerequisites**
-Ensure you have **Maven** and **JDK (Java Development Kit)** installed.
-> [!TIP]
-> For a quick and easy setup on Windows, you can use [Ninite](https://ninite.com/) to download and install the latest JDK.
+### **Step 2: Run the Application**
 
-### **Step 3: Compile the Project**
-Navigate to the project root and run:
+#### Mode A: Interactive Menu-based Mode (Console UI)
+Launch without arguments to use the interactive menu:
 ```bash
-mvn clean install -DskipTests
-```
-
-### **Step 4: Run the Application**
-Use the appropriate command for your terminal:
-
-**PowerShell:**
-```powershell
-mvn --% exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
-```
-
-**Command Prompt (CMD):**
-```cmd
 mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
 ```
+You can dynamically modify settings categories (General, Network, Orchestration, File Paths) with interactive guidance and validation before launching.
 
----
+#### Mode B: Parameter-based Mode (Headless / Scripted)
+You can directly pass command-line arguments to override configurations. This is ideal for server and background runs:
+```bash
+mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" \
+    -Dexec.args="--time 0.05 --devices 200 --parallel false"
+```
 
-## 🎮 Running the Simulation
-Once the application starts, you will be presented with interactive options:
-
-1.  **Option 1: Default Simulation** – Run a pre-configured simulation with standard parameters.
-2.  **Option 2: Custom Simulation** – Change parameters dynamically and run the simulation with your own settings.
+For detailed instructions, argument references, and configuration guides, check out:
+- [HOW_TO_RUN.md](HOW_TO_RUN.md) (Step-by-Step execution guide)
+- [docs/CODEBASE_DOCUMENTATION.md](docs/CODEBASE_DOCUMENTATION.md) (Complete developer & architecture documentation)
 
 ---
 

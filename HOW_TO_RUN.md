@@ -31,7 +31,7 @@ mvn clean compile
 ### Option A: Interactive Menu-based Mode (Recommended for testing settings)
 Launch the simulator without arguments:
 ```bash
-mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+mvn exec:java "-Dexec.mainClass=com.mechalikh.pureedgesim.MainApplication"
 ```
 
 This starts the interactive menu:
@@ -46,8 +46,7 @@ This starts the interactive menu:
 ### Option B: Parameter-based Headless Mode (Recommended for scripting/servers)
 You can directly pass configuration parameters as arguments using `-Dexec.args="..."`. This mode bypasses the interactive menu and executes immediately:
 ```bash
-mvn exec:java -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" \
-    -Dexec.args="--time 0.05 --devices 200 --parallel false"
+mvn exec:java "-Dexec.mainClass=com.mechalikh.pureedgesim.MainApplication" "-Dexec.args=--time 0.05 --devices 200 --parallel false"
 ```
 
 #### Available Command-Line Arguments:

@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 5.4 Changelog (June 6th 2026)
+
+*   **Customizable Node Counts per Tier**: Integrated specific count overrides for Mist/Edge devices, Edge datacenters (servers), and Cloud datacenters (servers) in both CLI argument parsing and the interactive settings menu.
+*   **Dynamic Topology Scaling**: Rewrote topology generation to dynamically interconnect arbitrary counts of Cloud and Edge datacenters, avoiding path-finding exception crashes.kw
+*   **Service Time Tracking**: Added total delay and average service time calculations to simulation tasks logging.
+*   **Service Time Performance Chart**: Created `ServiceTimeChart.java` and expanded the layout of `SimulationVisualizer` to render a 5-chart dashboard (including the new Service Time chart).
+*   **Energy Level Histograms**: Configured co-simulation runs (using `--arch ALL` or selection in menu) to dynamically generate and export side-by-side energy consumption metrics comparison charts for all active tiers.
+*   **Localized Run Scopes**: Refactored run commands to execute via localized environment variables to prevent global system variable mutation.
+
 ## Version 5.3 Changelog (April 4th 2024)
 
 *   Improved code quality (Listener Design Pattern)

@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
@@ -60,6 +61,8 @@ public class MainApplication {
 	private static Integer devicesCount = null;
 	private static Integer minDevices = null;
 	private static Integer maxDevices = null;
+	private static Integer edgeDataCentersCount = null;
+	private static Integer cloudDataCentersCount = null;
 	private static Integer stepSize = null;
 	private static String[] archs = null;
 	private static String[] algos = null;
@@ -150,6 +153,12 @@ public class MainApplication {
 						break;
 					case "--max-devices":
 						maxDevices = Integer.parseInt(args[++i]);
+						break;
+					case "--edge-datacenters":
+						edgeDataCentersCount = Integer.parseInt(args[++i]);
+						break;
+					case "--cloud-datacenters":
+						cloudDataCentersCount = Integer.parseInt(args[++i]);
 						break;
 					case "--step":
 						stepSize = Integer.parseInt(args[++i]);
@@ -418,34 +427,38 @@ public class MainApplication {
 		while (true) {
 			System.out.println("\n--- General Settings ---");
 			System.out.println("1. Simulation Time (minutes): " + (simulationTime != null ? simulationTime : "Default"));
-			System.out.println("2. Devices Count: " + (devicesCount != null ? devicesCount : "Default"));
-			System.out.println("3. Min Devices Count: " + (minDevices != null ? minDevices : "Default"));
-			System.out.println("4. Max Devices Count: " + (maxDevices != null ? maxDevices : "Default"));
-			System.out.println("5. Increment Step Size: " + (stepSize != null ? stepSize : "Default"));
-			System.out.println("6. Parallel Simulation: " + (parallelSim != null ? parallelSim : "Default"));
-			System.out.println("7. Save Results Charts: " + (saveCharts != null ? saveCharts : "Default"));
-			System.out.println("8. Save Log File: " + (saveLog != null ? saveLog : "Default"));
-			System.out.println("9. Deep Verbose Log: " + (verbose != null ? verbose : "Default"));
-			System.out.println("10. Batch Size: " + (batchSize != null ? batchSize : "Default"));
-			System.out.println("11. Display Real-time Swing Charts (Live View): " + (displayCharts != null ? displayCharts : "Default"));
-			System.out.println("12. Back to Main Menu");
-			System.out.print("\nSelect parameter to edit (1-12): ");
+			System.out.println("2. Edge/Mist Devices Count (Mist nodes): " + (devicesCount != null ? devicesCount : "Default"));
+			System.out.println("3. Min Edge/Mist Devices Count: " + (minDevices != null ? minDevices : "Default"));
+			System.out.println("4. Max Edge/Mist Devices Count: " + (maxDevices != null ? maxDevices : "Default"));
+			System.out.println("5. Edge Datacenters Count (Edge servers): " + (edgeDataCentersCount != null ? edgeDataCentersCount : "Default"));
+			System.out.println("6. Cloud Datacenters Count (Cloud servers): " + (cloudDataCentersCount != null ? cloudDataCentersCount : "Default"));
+			System.out.println("7. Increment Step Size: " + (stepSize != null ? stepSize : "Default"));
+			System.out.println("8. Parallel Simulation: " + (parallelSim != null ? parallelSim : "Default"));
+			System.out.println("9. Save Results Charts: " + (saveCharts != null ? saveCharts : "Default"));
+			System.out.println("10. Save Log File: " + (saveLog != null ? saveLog : "Default"));
+			System.out.println("11. Deep Verbose Log: " + (verbose != null ? verbose : "Default"));
+			System.out.println("12. Batch Size: " + (batchSize != null ? batchSize : "Default"));
+			System.out.println("13. Display Real-time Swing Charts (Live View): " + (displayCharts != null ? displayCharts : "Default"));
+			System.out.println("14. Back to Main Menu");
+			System.out.print("\nSelect parameter to edit (1-14): ");
 			String choice = scanner.nextLine().trim();
-			if (choice.equals("12")) break;
+			if (choice.equals("14")) break;
 
 			String promptMsg = "Enter new value: ";
 			switch (choice) {
 				case "1": promptMsg = "Enter simulation time in minutes (Double > 0, e.g., 60.0): "; break;
-				case "2": promptMsg = "Enter devices count (Integer >= 1, e.g., 200): "; break;
-				case "3": promptMsg = "Enter minimum devices count (Integer >= 1, e.g., 100): "; break;
-				case "4": promptMsg = "Enter maximum devices count (Integer >= 1, e.g., 500): "; break;
-				case "5": promptMsg = "Enter devices count increment step size (Integer >= 1, e.g., 50): "; break;
-				case "6": promptMsg = "Enable parallel simulation (Options: true, false): "; break;
-				case "7": promptMsg = "Save final results charts (Options: true, false): "; break;
-				case "8": promptMsg = "Save simulation log file (Options: true, false): "; break;
-				case "9": promptMsg = "Enable deep verbose logging (Options: true, false): "; break;
-				case "10": promptMsg = "Enter task scheduler batch size (Integer >= 1, e.g., 100): "; break;
-				case "11": promptMsg = "Display real-time Swing charts (Options: true, false): "; break;
+				case "2": promptMsg = "Enter edge/mist devices count (Integer >= 1, e.g., 200): "; break;
+				case "3": promptMsg = "Enter minimum edge/mist devices count (Integer >= 1, e.g., 100): "; break;
+				case "4": promptMsg = "Enter maximum edge/mist devices count (Integer >= 1, e.g., 500): "; break;
+				case "5": promptMsg = "Enter edge datacenters count (Integer >= 1, e.g., 2): "; break;
+				case "6": promptMsg = "Enter cloud datacenters count (Integer >= 1, e.g., 1): "; break;
+				case "7": promptMsg = "Enter devices count increment step size (Integer >= 1, e.g., 50): "; break;
+				case "8": promptMsg = "Enable parallel simulation (Options: true, false): "; break;
+				case "9": promptMsg = "Save final results charts (Options: true, false): "; break;
+				case "10": promptMsg = "Save simulation log file (Options: true, false): "; break;
+				case "11": promptMsg = "Enable deep verbose logging (Options: true, false): "; break;
+				case "12": promptMsg = "Enter task scheduler batch size (Integer >= 1, e.g., 100): "; break;
+				case "13": promptMsg = "Display real-time Swing charts (Options: true, false): "; break;
 				default:
 					System.out.println("Invalid field.");
 					continue;
@@ -476,20 +489,30 @@ public class MainApplication {
 						maxDevices = maxVal;
 						break;
 					case "5":
+						int dcCount = Integer.parseInt(val);
+						if (dcCount < 1) throw new IllegalArgumentException("Edge datacenters count must be >= 1.");
+						edgeDataCentersCount = dcCount;
+						break;
+					case "6":
+						int cloudCount = Integer.parseInt(val);
+						if (cloudCount < 1) throw new IllegalArgumentException("Cloud datacenters count must be >= 1.");
+						cloudDataCentersCount = cloudCount;
+						break;
+					case "7":
 						int stepVal = Integer.parseInt(val);
 						if (stepVal < 1) throw new IllegalArgumentException("Step size must be >= 1.");
 						stepSize = stepVal;
 						break;
-					case "6": parallelSim = parseStrictBoolean(val); break;
-					case "7": saveCharts = parseStrictBoolean(val); break;
-					case "8": saveLog = parseStrictBoolean(val); break;
-					case "9": verbose = parseStrictBoolean(val); break;
-					case "10":
+					case "8": parallelSim = parseStrictBoolean(val); break;
+					case "9": saveCharts = parseStrictBoolean(val); break;
+					case "10": saveLog = parseStrictBoolean(val); break;
+					case "11": verbose = parseStrictBoolean(val); break;
+					case "12":
 						int batchVal = Integer.parseInt(val);
 						if (batchVal < 1) throw new IllegalArgumentException("Batch size must be >= 1.");
 						batchSize = batchVal;
 						break;
-					case "11": displayCharts = parseStrictBoolean(val); break;
+					case "13": displayCharts = parseStrictBoolean(val); break;
 				}
 			} catch (Exception e) {
 				System.out.println("Error editing value: " + e.getMessage());
@@ -718,9 +741,11 @@ public class MainApplication {
 		System.out.println("Cloud XML Path: " + (cloudFilePath != null ? cloudFilePath : "Default"));
 		System.out.println("Output Folder: " + (outputPath != null ? outputPath : "Default"));
 		System.out.println("Simulation Duration (m): " + (simulationTime != null ? simulationTime : "Default"));
-		System.out.println("Devices Count: " + (devicesCount != null ? devicesCount : "Default"));
-		System.out.println("Min Devices: " + (minDevices != null ? minDevices : "Default"));
-		System.out.println("Max Devices: " + (maxDevices != null ? maxDevices : "Default"));
+		System.out.println("Edge/Mist Devices Count (Mist nodes): " + (devicesCount != null ? devicesCount : "Default"));
+		System.out.println("Min Edge/Mist Devices Count: " + (minDevices != null ? minDevices : "Default"));
+		System.out.println("Max Edge/Mist Devices Count: " + (maxDevices != null ? maxDevices : "Default"));
+		System.out.println("Edge Datacenters Count (Edge servers): " + (edgeDataCentersCount != null ? edgeDataCentersCount : "Default"));
+		System.out.println("Cloud Datacenters Count (Cloud servers): " + (cloudDataCentersCount != null ? cloudDataCentersCount : "Default"));
 		System.out.println("Step Size: " + (stepSize != null ? stepSize : "Default"));
 		System.out.println("Parallel Sim: " + (parallelSim != null ? parallelSim : "Default"));
 		System.out.println("Save Charts: " + (saveCharts != null ? saveCharts : "Default"));
@@ -755,6 +780,10 @@ public class MainApplication {
 				if (outputPath != null) SimulationParameters.outputFolder = outputPath;
 
 				applyDeviceOverridesAndSave();
+				applyDatacenterOverridesAndSave();
+
+				SimulationParameters.numberOfCloudDataCenters = 0;
+				SimulationParameters.numberOfEdgeDataCenters = 0;
 
 				boolean result = super.checkFiles();
 
@@ -921,6 +950,121 @@ public class MainApplication {
 			System.out.println("Applied " + deviceOverrides.size() + " device overrides. Saved to " + customPath);
 		} catch (Exception e) {
 			System.err.println("Error applying device overrides: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private static void applyDatacenterOverridesAndSave() {
+		if (edgeDataCentersCount == null && cloudDataCentersCount == null) {
+			return;
+		}
+		try {
+			if (cloudDataCentersCount != null) {
+				File inputFile = new File(cloudFilePath != null ? cloudFilePath : SimulationParameters.cloudDataCentersFile);
+				if (inputFile.exists()) {
+					DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+					Document doc = dBuilder.parse(inputFile);
+					doc.getDocumentElement().normalize();
+
+					NodeList nList = doc.getElementsByTagName("datacenter");
+					if (nList.getLength() > 0) {
+						Element template = (Element) nList.item(0).cloneNode(true);
+						
+						// Remove all existing datacenter elements
+						int len = nList.getLength();
+						for (int i = len - 1; i >= 0; i--) {
+							Node node = nList.item(i);
+							node.getParentNode().removeChild(node);
+						}
+
+						// Append new datacenter elements
+						for (int i = 0; i < cloudDataCentersCount; i++) {
+							Element copy = (Element) template.cloneNode(true);
+							doc.getDocumentElement().appendChild(copy);
+						}
+
+						// Save back to a custom file
+						String customPath = "PureEdgeSim/settings/cloud_custom.xml";
+						File customFile = new File(customPath);
+						customFile.getParentFile().mkdirs();
+						TransformerFactory transformerFactory = TransformerFactory.newInstance();
+						Transformer transformer = transformerFactory.newTransformer();
+						DOMSource source = new DOMSource(doc);
+						StreamResult result = new StreamResult(customFile);
+						transformer.transform(source, result);
+
+						// Update path to point to custom XML file
+						SimulationParameters.cloudDataCentersFile = customPath;
+						System.out.println("Applied cloud datacenter overrides. Saved to " + customPath);
+					}
+				}
+			}
+
+			if (edgeDataCentersCount != null) {
+				File inputFile = new File(datacentersFilePath != null ? datacentersFilePath : SimulationParameters.edgeDataCentersFile);
+				if (inputFile.exists()) {
+					DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+					Document doc = dBuilder.parse(inputFile);
+					doc.getDocumentElement().normalize();
+
+					NodeList nList = doc.getElementsByTagName("datacenter");
+					if (nList.getLength() > 0) {
+						Element template = (Element) nList.item(0).cloneNode(true);
+						
+						// Remove all existing datacenter elements
+						int len = nList.getLength();
+						for (int i = len - 1; i >= 0; i--) {
+							Node node = nList.item(i);
+							node.getParentNode().removeChild(node);
+						}
+
+						// Append new datacenter elements
+						NodeList netLinksList = doc.getElementsByTagName("network_links");
+						Node refNode = netLinksList.getLength() > 0 ? netLinksList.item(0) : null;
+
+						for (int i = 0; i < edgeDataCentersCount; i++) {
+							Element copy = (Element) template.cloneNode(true);
+							copy.setAttribute("name", "dc" + (i + 1));
+							NodeList locList = copy.getElementsByTagName("location");
+							if (locList.getLength() > 0) {
+								Element loc = (Element) locList.item(0);
+								NodeList xList = loc.getElementsByTagName("x_pos");
+								NodeList yList = loc.getElementsByTagName("y_pos");
+								if (xList.getLength() > 0) {
+									xList.item(0).setTextContent(String.valueOf(100 + i * 20));
+								}
+								if (yList.getLength() > 0) {
+									yList.item(0).setTextContent(String.valueOf(100 + i * 20));
+								}
+							}
+
+							if (refNode != null) {
+								doc.getDocumentElement().insertBefore(copy, refNode);
+							} else {
+								doc.getDocumentElement().appendChild(copy);
+							}
+						}
+
+						// Save back to a custom file
+						String customPath = "PureEdgeSim/settings/edge_datacenters_custom.xml";
+						File customFile = new File(customPath);
+						customFile.getParentFile().mkdirs();
+						TransformerFactory transformerFactory = TransformerFactory.newInstance();
+						Transformer transformer = transformerFactory.newTransformer();
+						DOMSource source = new DOMSource(doc);
+						StreamResult result = new StreamResult(customFile);
+						transformer.transform(source, result);
+
+						// Update path to point to custom XML file
+						SimulationParameters.edgeDataCentersFile = customPath;
+						System.out.println("Applied edge datacenter overrides. Saved to " + customPath);
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error applying datacenter overrides: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

@@ -69,6 +69,7 @@ public class SimLog {
 	protected int notGeneratedBecDeviceDead = 0;
 	protected Double totalExecutionTime = 0.0;
 	protected Double totalWaitingTime = 0.0;
+	protected Double totalServiceTime = 0.0;
 	protected int executedTasksCount = 0;
 	protected int tasksExecutedOnCloud = 0;
 	protected int tasksExecutedOnEdge = 0;
@@ -755,7 +756,12 @@ public class SimLog {
 	public void getTasksExecutionInfos(Task task) {
 		this.totalExecutionTime += task.getActualCpuTime();
 		this.totalWaitingTime += task.getWatingTime();
+		this.totalServiceTime += task.getTotalDelay();
 		this.executedTasksCount++;
+	}
+
+	public double getAverageServiceTime() {
+		return executedTasksCount > 0 ? totalServiceTime / executedTasksCount : 0.0;
 	}
 
 	public void taskSentFromOrchToDest(Task task) {

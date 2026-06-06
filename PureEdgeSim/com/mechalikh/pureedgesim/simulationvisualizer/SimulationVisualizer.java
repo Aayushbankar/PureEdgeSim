@@ -51,7 +51,7 @@ public class SimulationVisualizer {
 
     // List of charts to display
     protected static JFrame activeFrame = null;
-    protected List<Chart> charts = new ArrayList<Chart>(4);
+    protected List<Chart> charts = new ArrayList<Chart>(5);
 
     // Flag that indicates if it is the first time charts are updated
     protected boolean firstTime = true;
@@ -72,7 +72,8 @@ public class SimulationVisualizer {
         Chart tasksSuccessChart = new TasksChart("Tasks success rate", "Time (minutes)", "Success rate (%)",
                 simulationManager);
         Chart energyConsumptionChart = new EnergyChart("Energy consumption per level", "Tiers", "Energy (Wh)", simulationManager);
-        charts.addAll(List.of(mapChart, cpuUtilizationChart, tasksSuccessChart, energyConsumptionChart));
+        Chart serviceTimeChart = new ServiceTimeChart("Service time", "Time (minutes)", "Service time (seconds)", simulationManager);
+        charts.addAll(List.of(mapChart, cpuUtilizationChart, tasksSuccessChart, energyConsumptionChart, serviceTimeChart));
 
         // Add network utilization chart if the useOneSharedWanLink parameter is true
         if (SimulationParameters.useOneSharedWanLink) {

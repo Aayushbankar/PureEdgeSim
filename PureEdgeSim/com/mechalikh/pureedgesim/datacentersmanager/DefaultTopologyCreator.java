@@ -89,10 +89,11 @@ public class DefaultTopologyCreator extends TopologyCreator {
 		// Generate the topology of edge data centers from an XML file
 		generateTopologyFromXmlFile();
 
-		// Connect one edge data center with the cloud data center using WAN link
-		ComputingNode dc1 = getDataCenterByName("dc1");
-		infrastructureTopology.addLink(new NetworkLinkWanUp(dc1, wanNode, simulationManager, NetworkLinkTypes.WAN));
-		infrastructureTopology.addLink(new NetworkLinkWanDown(wanNode, dc1, simulationManager, NetworkLinkTypes.WAN));
+		// Connect all edge data centers with the cloud data center using WAN link
+		for (ComputingNode edgeDC : computingNodesGenerator.getEdgeOnlyList()) {
+			infrastructureTopology.addLink(new NetworkLinkWanUp(edgeDC, wanNode, simulationManager, NetworkLinkTypes.WAN));
+			infrastructureTopology.addLink(new NetworkLinkWanDown(wanNode, edgeDC, simulationManager, NetworkLinkTypes.WAN));
+		}
 
 		// Connect each edge device with the closest edge data center using LAN link
 		double range = SimulationParameters.edgeDataCentersRange;
@@ -137,21 +138,40 @@ public class DefaultTopologyCreator extends TopologyCreator {
 			// We need to create another node to link with the cloud.
 			ComputingNode metroRouter = new Router(simulationManager);
 
-			// After that, we can link it with the cloud. We select type IGNORE to avoid
+			NetworkLinkWanUp firstWanUp = null;
+			NetworkLinkWanDown firstWanDown = null;
+
+			// After that, we can link all cloud datacenters with the metroRouter. We select type IGNORE to avoid
 			// measuring energy consumption twice.
-			NetworkLinkWanUp wanUp = new NetworkLinkWanUp(metroRouter, cloud, simulationManager,
-					NetworkLinkTypes.IGNORE);
-			NetworkLinkWanDown wanDown = new NetworkLinkWanDown(cloud, metroRouter, simulationManager,
-					NetworkLinkTypes.IGNORE);
-			infrastructureTopology.addLink(wanUp);
-			infrastructureTopology.addLink(wanDown);
+			for (ComputingNode cl : computingNodesGenerator.getCloudOnlyList()) {
+				NetworkLinkWanUp wanUp = new NetworkLinkWanUp(metroRouter, cl, simulationManager,
+						NetworkLinkTypes.IGNORE);
+				NetworkLinkWanDown wanDown = new NetworkLinkWanDown(cl, metroRouter, simulationManager,
+						NetworkLinkTypes.IGNORE);
+				infrastructureTopology.addLink(wanUp);
+				infrastructureTopology.addLink(wanDown);
+
+				if (firstWanUp == null) {
+					firstWanUp = wanUp;
+					firstWanDown = wanDown;
+				}
+			}
 
 			// To enable the real time WAN chart, and use the WAN bandwidth in orchestration
-			// algorithms like in Example 8:
-			simulationManager.getNetworkModel().setWanLinks(wanUp, wanDown);
+			// algorithms:
+			if (firstWanUp != null) {
+				simulationManager.getNetworkModel().setWanLinks(firstWanUp, firstWanDown);
+			}
 			return metroRouter;
-		} else
+		} else {
+			// If not using one shared WAN link, connect other cloud nodes to the first one (cloud router)
+			for (int i = 1; i < computingNodesGenerator.getCloudOnlyList().size(); i++) {
+				ComputingNode cl = computingNodesGenerator.getCloudOnlyList().get(i);
+				infrastructureTopology.addLink(new NetworkLinkWanUp(cl, cloud, simulationManager, NetworkLinkTypes.IGNORE));
+				infrastructureTopology.addLink(new NetworkLinkWanDown(cloud, cl, simulationManager, NetworkLinkTypes.IGNORE));
+			}
 			return cloud;
+		}
 
 	}
 

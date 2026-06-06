@@ -71,7 +71,8 @@ public class SimulationVisualizer {
         Chart cpuUtilizationChart = new CPUChart("CPU utilization", "Time (s)", "Utilization (%)", simulationManager);
         Chart tasksSuccessChart = new TasksChart("Tasks success rate", "Time (minutes)", "Success rate (%)",
                 simulationManager);
-        charts.addAll(List.of(mapChart, cpuUtilizationChart, tasksSuccessChart));
+        Chart energyConsumptionChart = new EnergyChart("Energy consumption per level", "Tiers", "Energy (Wh)", simulationManager);
+        charts.addAll(List.of(mapChart, cpuUtilizationChart, tasksSuccessChart, energyConsumptionChart));
 
         // Add network utilization chart if the useOneSharedWanLink parameter is true
         if (SimulationParameters.useOneSharedWanLink) {
@@ -89,7 +90,7 @@ public class SimulationVisualizer {
     public void updateCharts() {
         if (firstTime) {
             SwingUtilities.invokeLater(() -> {
-                SwingWrapper<XYChart> swingWrapper = new SwingWrapper<>(
+                SwingWrapper swingWrapper = new SwingWrapper(
                         charts.stream().map(Chart::getChart).collect(Collectors.toList()));
                 if (activeFrame != null) {
                     activeFrame.dispose();
@@ -138,7 +139,12 @@ public class SimulationVisualizer {
      * @throws IOException if there is an error creating the directory or saving the images
      */
     public void saveCharts() throws IOException {
-        String folderName = "PureEdgeSim/output/charts/" + simulationManager.getScenario().getDevicesCount() + "_devices/"
+        String baseFolder = SimulationParameters.outputFolder;
+        if (!baseFolder.endsWith("/")) {
+            baseFolder += "/";
+        }
+        String folderName = baseFolder + simulationManager.getSimulationLogger().getSimStartTime() + "/charts/"
+                + simulationManager.getScenario().getDevicesCount() + "_devices/"
                 + simulationManager.getScenario().getOrchAlgorithm() + "/"
                 + simulationManager.getScenario().getStringOrchArchitecture();
         File folder = new File(folderName);
@@ -148,11 +154,9 @@ public class SimulationVisualizer {
         // Ensure charts are updated with final data before saving
         charts.forEach(Chart::update);
 
-        saveChartSafely(charts.get(0), folderName + "/map_chart");
-        saveChartSafely(charts.get(1), folderName + "/cpu_usage");
-        saveChartSafely(charts.get(2), folderName + "/tasks_success_rate");
-        if (SimulationParameters.useOneSharedWanLink && charts.size() > 3) {
-            saveChartSafely(charts.get(3), folderName + "/network_usage");
+        for (Chart chart : charts) {
+            String chartFileName = chart.getChart().getTitle().toLowerCase().replace(" ", "_");
+            saveChartSafely(chart, folderName + "/" + chartFileName);
         }
     }
 

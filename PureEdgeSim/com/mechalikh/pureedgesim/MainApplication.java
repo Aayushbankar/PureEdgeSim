@@ -23,6 +23,16 @@ import java.util.Arrays;
 import java.util.Scanner;
 import com.mechalikh.pureedgesim.scenariomanager.SimulationParameters;
 import com.mechalikh.pureedgesim.simulationmanager.Simulation;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 
 /**
  * The MainApplication class is the entry point for launching simulations.
@@ -33,6 +43,9 @@ import com.mechalikh.pureedgesim.simulationmanager.Simulation;
  * @since PureEdgeSim 5.0
  */
 public class MainApplication {
+
+	// Device overrides
+	private static java.util.Map<Integer, java.util.Map<String, String>> deviceOverrides = new java.util.HashMap<>();
 
 	// File Paths
 	private static String configPath = null;
@@ -219,6 +232,78 @@ public class MainApplication {
 					case "--deploy-orch":
 						deployOrch = args[++i].trim().toUpperCase();
 						break;
+					case "--device-mobility": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("mobility", val.toLowerCase());
+						break;
+					}
+					case "--device-speed": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("speed", val);
+						break;
+					}
+					case "--device-battery": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("battery", val.toLowerCase());
+						break;
+					}
+					case "--device-tasks": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("generateTasks", val.toLowerCase());
+						break;
+					}
+					case "--device-percent": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("percentage", val);
+						break;
+					}
+					case "--device-battery-cap": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("batteryCapacity", val);
+						break;
+					}
+					case "--device-idle": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("idleConsumption", val);
+						break;
+					}
+					case "--device-max-consumption": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("maxConsumption", val);
+						break;
+					}
+					case "--device-mips": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("mips", val);
+						break;
+					}
+					case "--device-cores": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("cores", val);
+						break;
+					}
+					case "--device-ram": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("ram", val);
+						break;
+					}
+					case "--device-storage": {
+						int idx = Integer.parseInt(args[++i]);
+						String val = args[++i];
+						deviceOverrides.computeIfAbsent(idx, k -> new java.util.HashMap<>()).put("storage", val);
+						break;
+					}
 					default:
 						System.err.println("Unknown argument: " + arg);
 						printHelp();
@@ -272,6 +357,18 @@ public class MainApplication {
 		System.out.println("  --registry-mode <mode>            Registry cache/download strategy");
 		System.out.println("  --enable-orch <true|false>        Enable custom orchestrators");
 		System.out.println("  --deploy-orch <location>          Orchestrator deployment strategy");
+		System.out.println("  --device-mobility <index> <val>   Mobility (true/false) for device type index");
+		System.out.println("  --device-speed <index> <val>      Speed (m/s) for device type index");
+		System.out.println("  --device-battery <index> <val>     Battery-powered (true/false) for device type index");
+		System.out.println("  --device-tasks <index> <val>      Generate tasks (true/false) for device type index");
+		System.out.println("  --device-percent <index> <val>    Percentage of devices (%) for device type index");
+		System.out.println("  --device-battery-cap <index> <val> Battery capacity (Wh) for device type index");
+		System.out.println("  --device-idle <index> <val>       Idle energy consumption rate (W) for device type index");
+		System.out.println("  --device-max-consumption <index>  Max active energy consumption rate (W) for device type index");
+		System.out.println("  --device-mips <index> <val>       CPU MIPS (1 GIPS = 1000 MIPS) for device type index");
+		System.out.println("  --device-cores <index> <val>      CPU Cores for device type index");
+		System.out.println("  --device-ram <index> <val>        RAM (MB) for device type index");
+		System.out.println("  --device-storage <index> <val>    Storage (MB) for device type index");
 	}
 
 	private static void runInteractiveMenu() {
@@ -283,13 +380,14 @@ public class MainApplication {
 			System.out.println("2. Configure General Settings (time, devices count, logging, etc.)");
 			System.out.println("3. Configure Network & Map Settings (bandwidth, latencies, range, etc.)");
 			System.out.println("4. Configure Orchestration & Registry Settings");
-			System.out.println("5. Configure File Paths & Folders");
-			System.out.println("6. View Current Configurations");
-			System.out.println("7. Exit");
-			System.out.print("\nSelect an option (1-7): ");
+			System.out.println("5. Configure Edge Devices Parameters (mobility, battery, CPU, RAM, etc.)");
+			System.out.println("6. Configure File Paths & Folders");
+			System.out.println("7. View Current Configurations");
+			System.out.println("8. Exit");
+			System.out.print("\nSelect an option (1-8): ");
 
 			String choice = scanner.nextLine().trim();
-			if (choice.equals("7")) {
+			if (choice.equals("8")) {
 				System.out.println("Exiting. Goodbye!");
 				break;
 			} else if (choice.equals("1")) {
@@ -302,8 +400,10 @@ public class MainApplication {
 			} else if (choice.equals("4")) {
 				configureOrchRegistrySettings(scanner);
 			} else if (choice.equals("5")) {
-				configureFilePaths(scanner);
+				configureEdgeDevicesSettings(scanner);
 			} else if (choice.equals("6")) {
+				configureFilePaths(scanner);
+			} else if (choice.equals("7")) {
 				printCurrentConfiguration();
 				System.out.println("\nPress Enter to return to main menu...");
 				scanner.nextLine();
@@ -654,6 +754,8 @@ public class MainApplication {
 				if (cloudFilePath != null) SimulationParameters.cloudDataCentersFile = cloudFilePath;
 				if (outputPath != null) SimulationParameters.outputFolder = outputPath;
 
+				applyDeviceOverridesAndSave();
+
 				boolean result = super.checkFiles();
 
 				if (result) {
@@ -765,6 +867,202 @@ public class MainApplication {
 		if (lower.equals("true")) return true;
 		if (lower.equals("false")) return false;
 		throw new IllegalArgumentException("Invalid boolean value. Must be 'true' or 'false'.");
+	}
+
+	private static void applyDeviceOverridesAndSave() {
+		if (deviceOverrides.isEmpty()) {
+			return;
+		}
+		try {
+			File inputFile = new File(devicesFilePath != null ? devicesFilePath : SimulationParameters.edgeDevicesFile);
+			if (!inputFile.exists()) {
+				System.err.println("Warning: Edge devices file not found at " + inputFile.getAbsolutePath() + ". Could not apply overrides.");
+				return;
+			}
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(inputFile);
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("device");
+			for (Integer idx : deviceOverrides.keySet()) {
+				if (idx >= 0 && idx < nList.getLength()) {
+					Element deviceElement = (Element) nList.item(idx);
+					java.util.Map<String, String> overrides = deviceOverrides.get(idx);
+					for (java.util.Map.Entry<String, String> entry : overrides.entrySet()) {
+						String param = entry.getKey();
+						String value = entry.getValue();
+						NodeList paramList = deviceElement.getElementsByTagName(param);
+						if (paramList.getLength() > 0) {
+							paramList.item(0).setTextContent(value);
+						} else {
+							Element newEl = doc.createElement(param);
+							newEl.setTextContent(value);
+							deviceElement.appendChild(newEl);
+						}
+					}
+				} else {
+					System.err.println("Warning: Device index " + idx + " is out of bounds (0 to " + (nList.getLength() - 1) + "). Override ignored.");
+				}
+			}
+
+			// Save back to a custom file
+			String customPath = "PureEdgeSim/settings/edge_devices_custom.xml";
+			File customFile = new File(customPath);
+			customFile.getParentFile().mkdirs();
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(customFile);
+			transformer.transform(source, result);
+
+			// Update path to point to custom XML file
+			SimulationParameters.edgeDevicesFile = customPath;
+			System.out.println("Applied " + deviceOverrides.size() + " device overrides. Saved to " + customPath);
+		} catch (Exception e) {
+			System.err.println("Error applying device overrides: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private static String getTagValueOrOverride(int devIdx, String tagName, Element devEl) {
+		if (deviceOverrides.containsKey(devIdx) && deviceOverrides.get(devIdx).containsKey(tagName)) {
+			return deviceOverrides.get(devIdx).get(tagName) + " (modified)";
+		}
+		NodeList nl = devEl.getElementsByTagName(tagName);
+		if (nl.getLength() > 0) {
+			return nl.item(0).getTextContent();
+		}
+		return "N/A";
+	}
+
+	private static void configureEdgeDevicesSettings(Scanner scanner) {
+		while (true) {
+			System.out.println("\n--- Edge Devices Parameters ---");
+			File inputFile = new File(devicesFilePath != null ? devicesFilePath : SimulationParameters.edgeDevicesFile);
+			if (!inputFile.exists()) {
+				System.out.println("Active edge devices XML file not found: " + inputFile.getAbsolutePath());
+				break;
+			}
+			NodeList nList = null;
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(inputFile);
+				doc.getDocumentElement().normalize();
+				nList = doc.getElementsByTagName("device");
+			} catch (Exception e) {
+				System.out.println("Error parsing edge devices XML: " + e.getMessage());
+				break;
+			}
+
+			if (nList == null || nList.getLength() == 0) {
+				System.out.println("No devices defined in the XML file.");
+				break;
+			}
+
+			System.out.println("Available Device Types in XML:");
+			for (int i = 0; i < nList.getLength(); i++) {
+				Element devEl = (Element) nList.item(i);
+				String percentage = getTagValueOrOverride(i, "percentage", devEl);
+				String mips = getTagValueOrOverride(i, "mips", devEl);
+				String battery = getTagValueOrOverride(i, "battery", devEl);
+				String cores = getTagValueOrOverride(i, "cores", devEl);
+				System.out.println(String.format("  [%d] Device Type %d (Percentage: %s%%, CPU: %s MIPS, Cores: %s, Battery-powered: %s)", 
+					i, i + 1, percentage, mips, cores, battery));
+			}
+			System.out.println("  [" + nList.getLength() + "] Back to Main Menu");
+			System.out.print("\nSelect a device type to configure (0-" + nList.getLength() + "): ");
+			String devChoiceStr = scanner.nextLine().trim();
+			int devIdx;
+			try {
+				devIdx = Integer.parseInt(devChoiceStr);
+			} catch (NumberFormatException e) {
+				System.out.println("Invalid index.");
+				continue;
+			}
+
+			if (devIdx == nList.getLength()) {
+				break;
+			}
+			if (devIdx < 0 || devIdx > nList.getLength()) {
+				System.out.println("Index out of bounds.");
+				continue;
+			}
+
+			Element devEl = (Element) nList.item(devIdx);
+			configureSpecificDevice(scanner, devIdx, devEl);
+		}
+	}
+
+	private static void configureSpecificDevice(Scanner scanner, int devIdx, Element devEl) {
+		String[] fields = {"mobility", "speed", "battery", "generateTasks", "percentage", "batteryCapacity", 
+						   "idleConsumption", "maxConsumption", "mips", "cores", "ram", "storage"};
+		String[] fieldLabels = {
+			"Mobility (true/false)",
+			"Speed (m/s)",
+			"Battery-powered (true/false)",
+			"Generate Tasks (true/false)",
+			"Percentage of devices (%)",
+			"Battery capacity (Wh)",
+			"Idle energy consumption rate (W)",
+			"Max active energy consumption rate (W)",
+			"CPU MIPS (1 GIPS = 1000 MIPS)",
+			"CPU Cores",
+			"RAM (MB)",
+			"Storage (MB)"
+		};
+
+		while (true) {
+			System.out.println("\n--- Configure Device Type " + (devIdx + 1) + " ---");
+			for (int i = 0; i < fields.length; i++) {
+				String val = getTagValueOrOverride(devIdx, fields[i], devEl);
+				System.out.println(String.format("  %d. %s: %s", i + 1, fieldLabels[i], val));
+			}
+			System.out.println("  " + (fields.length + 1) + ". Back to Devices Menu");
+			System.out.print("\nSelect parameter to edit (1-" + (fields.length + 1) + "): ");
+			String choiceStr = scanner.nextLine().trim();
+			int choice;
+			try {
+				choice = Integer.parseInt(choiceStr);
+			} catch (NumberFormatException e) {
+				System.out.println("Invalid selection.");
+				continue;
+			}
+
+			if (choice == fields.length + 1) {
+				break;
+			}
+			if (choice < 1 || choice > fields.length) {
+				System.out.println("Selection out of bounds.");
+				continue;
+			}
+
+			String fieldName = fields[choice - 1];
+			String fieldLabel = fieldLabels[choice - 1];
+			System.out.print("Enter new value for " + fieldLabel + ": ");
+			String newVal = scanner.nextLine().trim();
+
+			try {
+				if (fieldName.equals("mobility") || fieldName.equals("battery") || fieldName.equals("generateTasks")) {
+					if (!newVal.equalsIgnoreCase("true") && !newVal.equalsIgnoreCase("false")) {
+						throw new IllegalArgumentException("Must be true or false.");
+					}
+					newVal = newVal.toLowerCase();
+				} else if (fieldName.equals("cores")) {
+					int val = Integer.parseInt(newVal);
+					if (val < 1) throw new IllegalArgumentException("Cores must be >= 1.");
+				} else {
+					double val = Double.parseDouble(newVal);
+					if (val < 0) throw new IllegalArgumentException("Value must be >= 0.");
+				}
+
+				deviceOverrides.computeIfAbsent(devIdx, k -> new java.util.HashMap<>()).put(fieldName, newVal);
+				System.out.println("Modified parameter stored successfully.");
+			} catch (Exception e) {
+				System.out.println("Invalid value: " + e.getMessage());
+			}
+		}
 	}
 
 }

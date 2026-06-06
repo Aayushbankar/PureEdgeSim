@@ -23,6 +23,7 @@ package com.mechalikh.pureedgesim.simulationvisualizer;
 
 import java.awt.Color;
 import java.util.ArrayList; 
+import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -48,7 +49,7 @@ public class WanChart extends Chart {
      */
     public WanChart(String title, String xAxisTitle, String yAxisTitle, SimulationManager simulationManager) {
         super(title, xAxisTitle, yAxisTitle, simulationManager);
-        getChart().getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Line);
+        ((XYChart) getChart()).getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Line);
         // We can use the constant directly instead of computing it every time.
         updateSize(0.0, 0.0, 0.0, SimulationParameters.wanBandwidthBitsPerSecond / 1000000.0);
     }

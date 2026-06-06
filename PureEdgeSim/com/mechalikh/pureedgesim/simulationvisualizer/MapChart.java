@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -57,8 +58,8 @@ public class MapChart extends Chart {
 	 */
 	public MapChart(String title, String xAxisTitle, String yAxisTitle, SimulationManager simulationManager) {
 		super(title, xAxisTitle, yAxisTitle, simulationManager);
-		getChart().getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Scatter);
-		getChart().getStyler().setMarkerSize(4);
+		((XYChart) getChart()).getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Scatter);
+		((XYChart) getChart()).getStyler().setMarkerSize(4);
 		updateSize(0.0, (double) SimulationParameters.simulationMapWidth, 0.0,
 				(double) SimulationParameters.simulationMapLength);
 	}

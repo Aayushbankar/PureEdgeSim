@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -57,7 +58,7 @@ public class CPUChart extends Chart {
 	 */
 	public CPUChart(String title, String xAxisTitle, String yAxisTitle, SimulationManager simulationManager) {
 		super(title, xAxisTitle, yAxisTitle, simulationManager);
-		getChart().getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Line);
+		((XYChart) getChart()).getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Line);
 		updateSize(0.0, null, 0.0, null);
 	}
 

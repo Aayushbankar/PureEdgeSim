@@ -131,6 +131,96 @@ public class SimLog {
 		System.out.print(s);
 		// update the log
 		saveLog();
+		saveDetailedReports();
+	}
+
+	private void saveDetailedReports() {
+		String folderPath = SimulationParameters.outputFolder + "/" + simStartTime;
+		new File(folderPath).mkdirs();
+
+		// Write detailed task service times
+		String tasksFilePath = folderPath + "/detailed_tasks_service_times.csv";
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(tasksFilePath, false))) {
+			bw.write("Task ID,Source Device ID,Source Device Type,Destination Node ID,Destination Node Type,Status,Failure Reason,Waiting Time (s),CPU Execution Time (s),Network Transfer Time (s),Total Delay (s),Arrival Time (s),Start Time (s),Finish Time (s)");
+			bw.newLine();
+			for (Task task : simulationManager.getAllSimulationTasks()) {
+				int taskId = task.getId();
+				
+				ComputingNode dev = task.getEdgeDevice();
+				String devId = dev != null ? String.valueOf(dev.getId()) : "N/A";
+				String devType = dev != null ? String.valueOf(dev.getType()) : "N/A";
+				
+				ComputingNode dest = task.getOffloadingDestination();
+				String destId = dest != null ? String.valueOf(dest.getId()) : "N/A";
+				String destType = dest != null ? String.valueOf(dest.getType()) : "N/A";
+				
+				String status = task.getStatus() != null ? task.getStatus().toString() : "N/A";
+				String failReason = task.getFailureReason() != null ? task.getFailureReason().toString() : "N/A";
+				
+				double waiting = task.getWatingTime();
+				double cpu = task.getActualCpuTime();
+				double net = task.getActualNetworkTime();
+				double delay = task.getTotalDelay();
+				double arrival = task.getArrivalTime();
+				double start = task.getExecStartTime();
+				double finish = task.getExecutionFinishTime();
+				
+				bw.write(String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+					taskId, devId, devType, destId, destType, status, failReason,
+					decimalFormat.format(waiting), decimalFormat.format(cpu), decimalFormat.format(net),
+					decimalFormat.format(delay), decimalFormat.format(arrival), decimalFormat.format(start),
+					decimalFormat.format(finish)));
+				bw.newLine();
+			}
+		} catch (IOException e) {
+			System.err.println("Error saving detailed tasks log: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		// Write detailed node energy consumption
+		String nodesFilePath = folderPath + "/detailed_nodes_energy_consumption.csv";
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(nodesFilePath, false))) {
+			bw.write("Node ID,Node Name,Node Type,Total Energy (Wh),CPU Energy (Wh),Network Energy (Wh),Is Battery Powered,Battery Level (Wh),Battery Level (%),Is Dead,Death Time (s)");
+			bw.newLine();
+			List<ComputingNode> allNodes = simulationManager.getDataCentersManager().getComputingNodesGenerator().getAllNodesList();
+			for (ComputingNode node : allNodes) {
+				int nodeId = node.getId();
+				String name = node.getName();
+				String type = node.getType() != null ? node.getType().toString() : "N/A";
+				
+				double totalEnergy = 0.0;
+				double cpuEnergy = 0.0;
+				double networkEnergy = 0.0;
+				boolean isBattery = false;
+				double batteryLevelWh = -1.0;
+				double batteryLevelPercent = -1.0;
+				
+				if (node.getEnergyModel() != null) {
+					totalEnergy = node.getEnergyModel().getTotalEnergyConsumption();
+					cpuEnergy = node.getEnergyModel().getCpuEnergyConsumption();
+					networkEnergy = totalEnergy - cpuEnergy;
+					isBattery = node.getEnergyModel().isBatteryPowered();
+					batteryLevelWh = node.getEnergyModel().getBatteryLevelWattHour();
+					batteryLevelPercent = node.getEnergyModel().getBatteryLevelPercentage();
+				}
+				
+				boolean isDead = node.isDead();
+				double deathTime = node.getDeathTime();
+				
+				bw.write(String.format("%d,%s,%s,%s,%s,%s,%b,%s,%s,%b,%s",
+					nodeId, name, type,
+					decimalFormat.format(totalEnergy), decimalFormat.format(cpuEnergy), decimalFormat.format(networkEnergy),
+					isBattery, decimalFormat.format(batteryLevelWh), decimalFormat.format(batteryLevelPercent),
+					isDead, decimalFormat.format(deathTime)));
+				bw.newLine();
+			}
+		} catch (IOException e) {
+			System.err.println("Error saving detailed nodes log: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		System.out.println("Detailed task log saved to: " + tasksFilePath);
+		System.out.println("Detailed node log saved to: " + nodesFilePath);
 	}
 
 	protected void printCPUUtilizationResults() {

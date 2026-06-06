@@ -122,6 +122,20 @@ public interface Task extends QueueElement {
 	void setExecutionFinishTime(double clock);
 
 	/**
+	 * Returns the execution finish time of the Task.
+	 * 
+	 * @return the execution finish time of the Task
+	 */
+	double getExecutionFinishTime();
+
+	/**
+	 * Returns the arrival time of the Task.
+	 * 
+	 * @return the arrival time of the Task
+	 */
+	double getArrivalTime();
+
+	/**
 	 * Sets the ID of the Task.
 	 * 
 	 * @param id the ID of the Task

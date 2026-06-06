@@ -231,6 +231,16 @@ public abstract class TaskAbstract implements Task, Comparable<Task> {
 		this.execFinishTime = clock;
 	}
 
+	@Override
+	public double getExecutionFinishTime() {
+		return this.execFinishTime;
+	}
+
+	@Override
+	public double getArrivalTime() {
+		return this.arrivalTime;
+	}
+
 	/**
 	 * 
 	 * Sets the ID of this task to the specified value.

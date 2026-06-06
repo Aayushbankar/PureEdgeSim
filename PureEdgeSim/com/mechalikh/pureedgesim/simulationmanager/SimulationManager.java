@@ -123,8 +123,18 @@ public abstract class SimulationManager extends SimEntity {
 	 * 
 	 * @param taskList the ordered list of offlaoding requests.
 	 */
+	protected List<Task> allSimulationTasks = new ArrayList<>();
+
 	public void setTaskList(FutureQueue<Task> taskList) {
 		this.taskList = taskList;
+		this.allSimulationTasks.clear();
+		if (taskList != null) {
+			taskList.stream().forEach(this.allSimulationTasks::add);
+		}
+	}
+
+	public List<Task> getAllSimulationTasks() {
+		return this.allSimulationTasks;
 	}
 	
 	/**

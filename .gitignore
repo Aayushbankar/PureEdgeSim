@@ -31,3 +31,5 @@ jacoco.xml
 **/jacoco.exec
 **/target/
 **/output/
+# Temporary configuration
+PureEdgeSim/settings/edge_devices_custom.xml

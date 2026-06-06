@@ -26,6 +26,7 @@ import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.style.Styler.ChartTheme;
 import org.knowm.xchart.style.Styler.LegendPosition;
 import org.knowm.xchart.style.markers.Marker;
+import org.knowm.xchart.style.AxesChartStyler;
 
 import com.mechalikh.pureedgesim.datacentersmanager.ComputingNodesGenerator;
 import com.mechalikh.pureedgesim.simulationmanager.SimulationManager;
@@ -46,7 +47,7 @@ public abstract class Chart {
 	/**
 	 * The XYChart used to display data.
 	 */
-	protected XYChart chart;
+	protected org.knowm.xchart.internal.chartpart.Chart chart;
 
 	/**
 	 * The height of the chart.
@@ -79,8 +80,8 @@ public abstract class Chart {
 	public Chart(String title, String xAxisTitle, String yAxisTitle, SimulationManager simulationManager) {
 		chart = new XYChartBuilder().height(height).width(width).theme(ChartTheme.Matlab).title(title)
 				.xAxisTitle(xAxisTitle).yAxisTitle(yAxisTitle).build();
-		chart.getStyler().setLegendPosition(LegendPosition.OutsideE);
-		chart.getStyler().setLegendVisible(true);
+		((XYChart) chart).getStyler().setLegendPosition(LegendPosition.OutsideE);
+		((XYChart) chart).getStyler().setLegendVisible(true);
 		this.simulationManager = simulationManager;
 		computingNodesGenerator = simulationManager.getDataCentersManager().getComputingNodesGenerator();
 
@@ -100,10 +101,13 @@ public abstract class Chart {
 	 * @param maxYValue the maximum value of the Y axis
 	 */
 	protected void updateSize(Double minXValue, Double maxXValue, Double minYValue, Double maxYValue) {
-		chart.getStyler().setXAxisMin(minXValue);
-		chart.getStyler().setXAxisMax(maxXValue);
-		chart.getStyler().setYAxisMin(minYValue);
-		chart.getStyler().setYAxisMax(maxYValue);
+		if (chart instanceof XYChart) {
+			XYChart xyChart = (XYChart) chart;
+			xyChart.getStyler().setXAxisMin(minXValue);
+			xyChart.getStyler().setXAxisMax(maxXValue);
+			xyChart.getStyler().setYAxisMin(minYValue);
+			xyChart.getStyler().setYAxisMax(maxYValue);
+		}
 	}
 
 	/**
@@ -116,11 +120,12 @@ public abstract class Chart {
 	 * @param marker the marker type of the series
 	 * @param color  the color of the series
 	 */
-	protected static void updateSeries(XYChart chart, String name, double[] X, double[] Y, Marker marker, Color color) {
-		if (chart.getSeriesMap().containsKey(name)) {
-			chart.updateXYSeries(name, X, Y, null);
+	protected static void updateSeries(org.knowm.xchart.internal.chartpart.Chart chart, String name, double[] X, double[] Y, Marker marker, Color color) {
+		XYChart xyChart = (XYChart) chart;
+		if (xyChart.getSeriesMap().containsKey(name)) {
+			xyChart.updateXYSeries(name, X, Y, null);
 		} else {
-			XYSeries series = chart.addSeries(name, X, Y, null);
+			XYSeries series = xyChart.addSeries(name, X, Y, null);
 			series.setMarker(marker); // Marker type: circle, rectangle, diamond..
 			series.setMarkerColor(color); // The color: blue, red, green, yellow, gray..
 			series.setLineStyle(new BasicStroke());
@@ -136,7 +141,7 @@ public abstract class Chart {
 	 * 
 	 * @return the chart
 	 */
-	public XYChart getChart() {
+	public org.knowm.xchart.internal.chartpart.Chart getChart() {
 		return chart;
 	}
 

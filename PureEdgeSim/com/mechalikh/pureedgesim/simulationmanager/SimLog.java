@@ -103,7 +103,7 @@ public class SimLog {
 			// Add the CSV file header
 			resultsList.add("Orchestration architecture,Orchestration algorithm,Edge devices count,"
 					+ "Total tasks execution delay (s),Average execution delay (s),Total tasks waiting time (s),"
-					+ "Average waiting time (s),Number of generated tasks,Tasks successfully executed,"
+					+ "Average waiting time (s),Average service time (s),Number of generated tasks,Tasks successfully executed,"
 					+ "Task not executed (No resources available or long waiting time),Tasks failed (delay),Tasks failed (device dead),"
 					+ "Tasks failed (mobility),Tasks not generated due to the death of devices,Total tasks executed (Cloud),"
 					+ "Tasks successfully executed (Cloud),Total tasks executed (Edge),Tasks successfully executed (Edge),"
@@ -352,11 +352,16 @@ public class SimLog {
 				+ padLeftSpaces("" + tasksExecutedOnMist, 14) + " tasks (where "
 				+ (tasksExecutedOnMist - tasksFailedMist) + " were successfully executed )");
 
+		double avgServiceTime = executedTasksCount > 0 ? totalServiceTime / executedTasksCount : 0.0;
+		print("Average task service time (execution + waiting + network)               :"
+				+ padLeftSpaces(decimalFormat.format(avgServiceTime), 20) + " seconds");
+
 		resultsList.add(currentOrchArchitecture + "," + currentOrchAlgorithm + "," + currentEdgeDevicesCount + ","
 				+ decimalFormat.format(totalExecutionTime) + ","
 				+ decimalFormat.format(avgExecTime) + ","
 				+ decimalFormat.format(totalWaitingTime) + ","
-				+ decimalFormat.format(avgWaitingTime) + "," + generatedTasksCount + ","
+				+ decimalFormat.format(avgWaitingTime) + ","
+				+ decimalFormat.format(avgServiceTime) + "," + generatedTasksCount + ","
 				+ (tasksSent - tasksFailed) + "," + tasksFailedRessourcesUnavailable + "," + tasksFailedLatency + ","
 				+ tasksFailedBeacauseDeviceDead + "," + tasksFailedMobility + "," + notGeneratedBecDeviceDead + ","
 				+ tasksExecutedOnCloud + "," + (tasksExecutedOnCloud - tasksFailedCloud) + "," + tasksExecutedOnEdge

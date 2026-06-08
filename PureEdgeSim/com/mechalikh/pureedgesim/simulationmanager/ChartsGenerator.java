@@ -58,7 +58,8 @@ public class ChartsGenerator {
 			"Tasks failed (device dead)", "Tasks failed (mobility)", "Tasks not generated due to the death of devices",
 			"Total tasks executed (Cloud)", "Tasks successfully executed (Cloud)", "Total tasks executed (Edge)",
 			"Tasks successfully executed (Edge)", "Total tasks executed (Mist)", "Tasks successfully executed (Mist)");
-	protected List<String> delaysChartsList = List.of("Average waiting time (s)", "Average execution delay (s)");
+	protected List<String> delaysChartsList = List.of("Average waiting time (s)", "Average execution delay (s)",
+			"Average service time (s)");
 
 	protected List<String> networkChartsList = List.of("Network usage (s)", "Wan usage (s)", "Containers wan usage (s)",
 			"Containers lan usage (s)");
@@ -170,6 +171,7 @@ public class ChartsGenerator {
 		generateNetworkCharts();
 		generateCpuCharts();
 		generateEnergyCharts();
+		generateServiceTimeChart();
 	}
 
 	protected void generateEnergyCharts() {
@@ -193,6 +195,14 @@ public class ChartsGenerator {
 
 		for (String value : delaysChartsList)
 			displayChart(value, "Time (s)", "/Tasks");
+	}
+	/**
+	 * Generates a dedicated Service Time vs. Edge Device Count chart for each
+	 * orchestration architecture and algorithm, styled to match Fig. 15(a)
+	 * of the reference paper.
+	 */
+	protected void generateServiceTimeChart() {
+		displayChart("Average service time (s)", "Time (s)", "/Service Time");
 	}
 
 }

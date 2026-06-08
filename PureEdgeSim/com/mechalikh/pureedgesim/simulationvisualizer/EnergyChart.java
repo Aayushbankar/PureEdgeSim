@@ -22,14 +22,12 @@ package com.mechalikh.pureedgesim.simulationvisualizer;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.List;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.style.Styler.ChartTheme;
 import org.knowm.xchart.style.Styler.LegendPosition;
 import com.mechalikh.pureedgesim.datacentersmanager.ComputingNode;
-import com.mechalikh.pureedgesim.scenariomanager.SimulationParameters;
 import com.mechalikh.pureedgesim.simulationmanager.SimulationManager;
 
 /**
@@ -82,35 +80,37 @@ public class EnergyChart extends Chart {
 	@Override
 	public void update() {
 		CategoryChart categoryChart = (CategoryChart) chart;
-		List<ComputingNode> allNodes = computingNodesGenerator.getAllNodesList();
 
 		double mistTotal = 0.0, mistCpu = 0.0, mistNet = 0.0;
 		double edgeTotal = 0.0, edgeCpu = 0.0, edgeNet = 0.0;
 		double cloudTotal = 0.0, cloudCpu = 0.0, cloudNet = 0.0;
 
-		for (ComputingNode node : allNodes) {
-			double totalEnergy = 0.0;
-			double cpuEnergy = 0.0;
-			double networkEnergy = 0.0;
-
+		// Use dedicated tier lists (same approach as SimLog) for accuracy
+		for (ComputingNode node : computingNodesGenerator.getCloudOnlyList()) {
 			if (node.getEnergyModel() != null) {
-				totalEnergy = node.getEnergyModel().getTotalEnergyConsumption();
-				cpuEnergy = node.getEnergyModel().getCpuEnergyConsumption();
-				networkEnergy = totalEnergy - cpuEnergy;
-			}
-
-			if (node.getType() == SimulationParameters.TYPES.EDGE_DEVICE) {
-				mistTotal += totalEnergy;
-				mistCpu += cpuEnergy;
-				mistNet += networkEnergy;
-			} else if (node.getType() == SimulationParameters.TYPES.EDGE_DATACENTER) {
-				edgeTotal += totalEnergy;
-				edgeCpu += cpuEnergy;
-				edgeNet += networkEnergy;
-			} else if (node.getType() == SimulationParameters.TYPES.CLOUD) {
+				double totalEnergy = node.getEnergyModel().getTotalEnergyConsumption();
+				double cpuEnergy = node.getEnergyModel().getCpuEnergyConsumption();
 				cloudTotal += totalEnergy;
 				cloudCpu += cpuEnergy;
-				cloudNet += networkEnergy;
+				cloudNet += (totalEnergy - cpuEnergy);
+			}
+		}
+		for (ComputingNode node : computingNodesGenerator.getEdgeOnlyList()) {
+			if (node.getEnergyModel() != null) {
+				double totalEnergy = node.getEnergyModel().getTotalEnergyConsumption();
+				double cpuEnergy = node.getEnergyModel().getCpuEnergyConsumption();
+				edgeTotal += totalEnergy;
+				edgeCpu += cpuEnergy;
+				edgeNet += (totalEnergy - cpuEnergy);
+			}
+		}
+		for (ComputingNode node : computingNodesGenerator.getMistOnlyList()) {
+			if (node.getEnergyModel() != null) {
+				double totalEnergy = node.getEnergyModel().getTotalEnergyConsumption();
+				double cpuEnergy = node.getEnergyModel().getCpuEnergyConsumption();
+				mistTotal += totalEnergy;
+				mistCpu += cpuEnergy;
+				mistNet += (totalEnergy - cpuEnergy);
 			}
 		}
 

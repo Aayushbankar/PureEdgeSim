@@ -104,18 +104,23 @@ else
 fi
 
 # ── launch ────────────────────────────────────────────────────────────────────
-step "Launching PureEdgeSim interactive menu..."
+step "Launching PureEdgeSim..."
 echo ""
 echo -e "  ${YELLOW}Tip:${RESET} use options 2–6 in the menu to configure settings,"
 echo -e "       then choose 1 to start the simulation."
 echo ""
 
-"$MVN" exec:java \
-  -f "$PROJECT_ROOT/pom.xml" \
-  -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" \
-  "${EXTRA_ARGS[@]/#/-Dexec.args=}" \
-  2>&1 | grep -v "^\[INFO\] \(Scanning\|Building\|---\|BUILD\|Total\|Finished\)" \
-       || true
+if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+  ALL_ARGS="${EXTRA_ARGS[*]}"
+  "$MVN" exec:java \
+    -f "$PROJECT_ROOT/pom.xml" \
+    -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" \
+    -Dexec.args="$ALL_ARGS"
+else
+  "$MVN" exec:java \
+    -f "$PROJECT_ROOT/pom.xml" \
+    -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+fi
 
 echo ""
 echo -e "${GREEN}${BOLD}  PureEdgeSim session ended.${RESET}"

@@ -451,7 +451,7 @@ public class SimLog {
 
 		for (ComputingNode node : simulationManager.getDataCentersManager().getComputingNodesGenerator()
 				.getCloudOnlyList())
-			cloudEnConsumption = node.getEnergyModel().getTotalEnergyConsumption();
+			cloudEnConsumption += node.getEnergyModel().getTotalEnergyConsumption();
 
 		for (ComputingNode node : simulationManager.getDataCentersManager().getComputingNodesGenerator()
 				.getEdgeOnlyList())

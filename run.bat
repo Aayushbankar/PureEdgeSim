@@ -30,10 +30,19 @@ if not exist "%PROJECT_ROOT%\pom.xml" (
     pause & exit /b 1
 )
 
-:: ── parse flags ───────────────────────────────────────────────────────────────
+:: ── parse flags & args ─────────────────────────────────────────────────────────
 set "SKIP_COMPILE=false"
+set "APP_ARGS="
 for %%A in (%*) do (
-    if /i "%%A"=="--no-compile" set "SKIP_COMPILE=true"
+    if /i "%%A"=="--no-compile" (
+        set "SKIP_COMPILE=true"
+    ) else (
+        if not defined APP_ARGS (
+            set "APP_ARGS=%%A"
+        ) else (
+            set "APP_ARGS=!APP_ARGS! %%A"
+        )
+    )
 )
 
 :: ── locate Java ───────────────────────────────────────────────────────────────
@@ -146,15 +155,22 @@ if /i "%SKIP_COMPILE%"=="true" (
 
 :: ── launch ────────────────────────────────────────────────────────────────────
 echo.
-echo  ^> Launching PureEdgeSim interactive menu...
+echo  ^> Launching PureEdgeSim...
 echo.
 echo     Tip: use options 2-6 in the menu to configure settings,
 echo          then choose 1 to start the simulation.
 echo.
 
-"%MVN%" exec:java ^
-    -f "%PROJECT_ROOT%\pom.xml" ^
-    -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+if defined APP_ARGS (
+    "%MVN%" exec:java ^
+        -f "%PROJECT_ROOT%\pom.xml" ^
+        -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication" ^
+        -Dexec.args="!APP_ARGS!"
+) else (
+    "%MVN%" exec:java ^
+        -f "%PROJECT_ROOT%\pom.xml" ^
+        -Dexec.mainClass="com.mechalikh.pureedgesim.MainApplication"
+)
 
 echo.
 echo  PureEdgeSim session ended.

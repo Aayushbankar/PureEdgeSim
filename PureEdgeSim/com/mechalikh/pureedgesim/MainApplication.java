@@ -94,6 +94,11 @@ public class MainApplication {
 	private static String deployOrch = null;
 
 	public static void main(final String[] args) {
+		// If running in a headless environment (no display), enforce headless mode to prevent AWT from hanging on chart generation
+		if (System.getenv("DISPLAY") == null) {
+			System.setProperty("java.awt.headless", "true");
+		}
+
 		if (args.length > 0) {
 			// Parameter-based mode
 			boolean parsed = parseArgs(args);

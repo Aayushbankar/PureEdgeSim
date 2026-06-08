@@ -87,6 +87,7 @@ public class ChartsGenerator {
 	}
 
 	protected int getColumnIndex(String name) {
+		if (records.isEmpty() || records.get(0).length == 0) return -1;
 		for (int j = 0; j < records.get(0).length; j++) {
 			if (records.get(0)[j].trim().equals(name.trim())) {
 				return j;
@@ -168,9 +169,12 @@ public class ChartsGenerator {
 	protected List<Double> getColumn(String name, String orch, String alg) {
 		List<Double> list = new ArrayList<>();
 		int column = getColumnIndex(name);
+		if (column < 0) return list;
 		for (int line = 1; line < records.size(); line++) {
-			if (records.get(line)[0].trim().equals(orch.trim()) && records.get(line)[1].trim().equals(alg.trim())) {
-				list.add(Double.parseDouble(records.get(line)[column]));
+			String[] row = records.get(line);
+			if (row.length <= Math.max(1, column)) continue;
+			if (row[0].trim().equals(orch.trim()) && row[1].trim().equals(alg.trim())) {
+				list.add(Double.parseDouble(row[column]));
 			}
 		}
 		return list;
@@ -185,8 +189,10 @@ public class ChartsGenerator {
 		int col = getColumnIndex("Edge devices count");
 		if (col < 0) return list;
 		for (int line = 1; line < records.size(); line++) {
-			if (records.get(line)[0].trim().equals(orch.trim()) && records.get(line)[1].trim().equals(alg.trim())) {
-				list.add(records.get(line)[col].trim());
+			String[] row = records.get(line);
+			if (row.length <= Math.max(1, col)) continue;
+			if (row[0].trim().equals(orch.trim()) && row[1].trim().equals(alg.trim())) {
+				list.add(row[col].trim());
 			}
 		}
 		return list;
@@ -250,9 +256,20 @@ public class ChartsGenerator {
 		// One chart per architecture  (columns of the reference figure)
 		for (String arch : SimulationParameters.orchestrationArchitectures) {
 
+			String displayTitle;
+			if (arch.equalsIgnoreCase("CLOUD_ONLY")) {
+				displayTitle = "Cloud-Only";
+			} else if (arch.equalsIgnoreCase("EDGE_ONLY")) {
+				displayTitle = "Fog-and-Cloud";
+			} else if (arch.equalsIgnoreCase("MIST_ONLY")) {
+				displayTitle = "Proposed";
+			} else {
+				displayTitle = arch;
+			}
+
 			CategoryChart chart = new CategoryChartBuilder()
 					.width(520).height(430)
-					.title("Service time (" + arch + ")")
+					.title(displayTitle)
 					.xAxisTitle("Edge devices count")
 					.yAxisTitle("Service time (s)")
 					.theme(ChartTheme.Matlab)
@@ -284,15 +301,15 @@ public class ChartsGenerator {
 				List<Double> execData = getColumn("Average execution delay (s)", arch, alg);
 				List<Double> waitData = getColumn("Average waiting time (s)",   arch, alg);
 
-				// Execution-time segment (bottom, dark)
-				CategorySeries execSeries = chart.addSeries(
-						alg + " – exec", deviceCounts, execData);
-				execSeries.setFillColor(execColor);
-
-				// Waiting-time segment (top, light)
+				// Waiting-time segment (bottom, light)
 				CategorySeries waitSeries = chart.addSeries(
-						alg + " – wait", deviceCounts, waitData);
+						alg + " - Waiting Time", deviceCounts, waitData);
 				waitSeries.setFillColor(waitColor);
+
+				// Execution-time segment (top, dark)
+				CategorySeries execSeries = chart.addSeries(
+						alg + " - Execution Time", deviceCounts, execData);
+				execSeries.setFillColor(execColor);
 
 				anyData = true;
 			}

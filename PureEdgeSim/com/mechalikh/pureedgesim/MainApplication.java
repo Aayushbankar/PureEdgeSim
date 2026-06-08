@@ -94,8 +94,10 @@ public class MainApplication {
 	private static String deployOrch = null;
 
 	public static void main(final String[] args) {
-		// If running in a headless environment (no display), enforce headless mode to prevent AWT from hanging on chart generation
-		if (System.getenv("DISPLAY") == null) {
+		// If running in a Unix/Linux environment without a display, enforce headless mode to prevent AWT from hanging
+		String osName = System.getProperty("os.name").toLowerCase();
+		boolean isUnix = osName.contains("nix") || osName.contains("nux") || osName.contains("aix");
+		if (isUnix && System.getenv("DISPLAY") == null) {
 			System.setProperty("java.awt.headless", "true");
 		}
 
